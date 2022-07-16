@@ -12,6 +12,8 @@ public class PlayerScript : MonoBehaviour
 
     Vector3 moveDir;
     public bool canMove = true;
+    bool useDoubleJump;
+
     bool isJump;
 
     public int moveSpd = 5; //이동속도
@@ -27,6 +29,9 @@ public class PlayerScript : MonoBehaviour
 
     void Update()
     {
+        //플레이어 모델 자체는 위치가 변경되지 않는다
+        playerModel.transform.localPosition = new Vector3(0, 0, 0);
+
         if (canMove)
         {
             PlayerMove();
@@ -43,6 +48,7 @@ public class PlayerScript : MonoBehaviour
         if (collision.gameObject.tag == "Floor")
         {
             isJump = false;
+            useDoubleJump = false;
         }
     }
 
@@ -53,28 +59,40 @@ public class PlayerScript : MonoBehaviour
         //이동 중일 시
         if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
         {
-            //플레이어가 카메라 방향을 보도록 하기
-            Vector3 camDir = camera.transform.forward;
-            camDir.y = 0;
-            transform.LookAt(transform.position + camDir);
+            //이동 방향으로 플레이어 회전
+            Vector3 camForward = new Vector3(camera.transform.forward.x, 0, camera.transform.forward.z).normalized;
+            Vector3 camRight = new Vector3(camera.transform.right.x, 0, camera.transform.right.z).normalized;
+            Vector3 playerDir = camForward * moveDir.z + camRight * moveDir.x; //플레이어의 방향은 카메라의 벡터값과 키보드 입력값을 통해 구함
+            transform.forward = playerDir;
 
             //목표 지점으로 이동
-            moveDir = transform.TransformDirection(moveDir);
-            moveDir.y = 0;
-
             if(Input.GetAxis("Run") != 0) //달리기
-                transform.position += moveDir * runSpd * Time.deltaTime;
+                transform.position += playerDir * runSpd * Time.deltaTime;
             else //걷기
-                transform.position += moveDir * moveSpd * Time.deltaTime;
+                transform.position += playerDir * moveSpd * Time.deltaTime;
         }
     }
 
     void PlayerJump()
     {
-        if (Input.GetAxis("Jump") != 0 && !isJump)
+        if (Input.GetKeyDown(KeyCode.Space))
         {
-            isJump = true;
-            rigidbody.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
+            //1단 점프
+            if (!isJump)
+            {
+                isJump = true;
+                rigidbody.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
+                return;
+            }
+            //2단 점프
+            else if(!useDoubleJump)
+            {
+                animator.SetTrigger("isDoubleJump");
+
+                useDoubleJump = true;
+                rigidbody.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
+                return;
+            }
         }
     }
 }
