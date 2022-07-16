@@ -6,16 +6,22 @@ public class PlayerScript : MonoBehaviour
 {
     [SerializeField] GameObject camera;
     [SerializeField] GameObject playerModel;
+    [SerializeField] Transform rightHand;
+
+    SpringJoint joint;
 
     Rigidbody rigidbody;
     Animator animator;
+    LineRenderer lineRenderer;
 
-    Vector3 moveDir;
+    Vector3 moveDir; //이동 방향
+    Vector3 grapPoint; //이동용 거미줄 발사 방향
     public bool canMove = true;
     bool useDoubleJump;
 
     bool isJump;
     bool isClimb;
+    bool isFall;
 
     public int moveSpd = 5; //이동속도
     public int runSpd = 10; //달리기 속도
@@ -27,12 +33,15 @@ public class PlayerScript : MonoBehaviour
     {
         rigidbody = GetComponent<Rigidbody>();
         animator = playerModel.GetComponent<Animator>();
+        lineRenderer = GetComponent<LineRenderer>();
     }
 
     void Update()
     {
         //플레이어 모델 자체는 위치가 변경되지 않는다
         playerModel.transform.localPosition = new Vector3(0, 0, 0);
+
+        CheckIsFall(); //낙하 중인지 체크
 
         if (canMove)
         {
@@ -43,19 +52,34 @@ public class PlayerScript : MonoBehaviour
             PlayerClimb(); //벽 타기
         }
 
+        PlayerShootMoveWeb(); //이동용 거미줄 발사
+
+
         animator.SetBool("isWalk", moveDir != Vector3.zero);
         animator.SetBool("isRun", moveDir != Vector3.zero && Input.GetAxis("Run") != 0);
         animator.SetBool("isJump", isJump);
         animator.SetBool("isClimb", isClimb);
         animator.SetBool("isMoveClimb", moveDir != Vector3.zero && isClimb);
+        animator.SetBool("isInAir", isFall);
+        animator.SetBool("isSwing", joint);
     }
 
-    void OnCollisionEnter(Collision collision)
+    void CheckIsFall()
     {
-        if (collision.gameObject.tag == "Floor")
+        if (Physics.Raycast(transform.position, -transform.up, out RaycastHit hit, 0.1f))
         {
-            isJump = false;
-            useDoubleJump = false;
+            //바닥에 착지했을 시
+            if(hit.collider != null)
+            {
+                isFall = false;
+                isJump = false;
+                useDoubleJump = false;
+            }
+        }
+        //낙하 중일 시
+        else if(hit.collider == null)
+        {
+            isFall = true;
         }
     }
 
@@ -73,10 +97,21 @@ public class PlayerScript : MonoBehaviour
                 transform.forward = playerDir;
 
                 //목표 지점으로 이동
-                if (Input.GetAxis("Run") != 0) //달리기
-                    transform.position += playerDir * runSpd * Time.deltaTime;
-                else //걷기
-                    transform.position += playerDir * moveSpd * Time.deltaTime;
+                if (!joint)
+                {
+                    if (Input.GetAxis("Run") != 0) //달리기
+                        transform.position += playerDir * runSpd * Time.deltaTime;
+                    else //걷기
+                        transform.position += playerDir * moveSpd * Time.deltaTime;
+                }
+                //거미줄로 목표 지점 이동
+                else
+                {
+                    if (Input.GetAxis("Run") != 0) //빠른 거미줄 이동
+                        transform.position += playerDir * runSpd * 2f * Time.deltaTime;
+                    else //거미줄 이동
+                        transform.position += playerDir * moveSpd * 2f * Time.deltaTime;
+                }
             }
         }
     }
@@ -160,6 +195,63 @@ public class PlayerScript : MonoBehaviour
         {
             //중력 활성화
             rigidbody.useGravity = true;
+        }
+    }
+
+    void PlayerShootMoveWeb()
+    {
+        //거미줄로 이동 중인가
+        if (joint)
+        {
+            //거미줄 그리기
+            lineRenderer.SetPosition(0, rightHand.position);
+            lineRenderer.SetPosition(1, grapPoint);
+
+            //만약 착지했을 시
+            if(!isFall)
+            {
+                //거미줄 삭제
+                lineRenderer.positionCount = 0;
+                Destroy(joint);
+
+                return;
+            }
+        }
+
+        //거미줄 발사
+        if (Input.GetMouseButtonDown(1))
+        {
+            //현재 캐릭터의 위치 구하기 (카메라 위치 + 카메라와 캐릭터 사이 간격)
+            Vector3 hitPos = camera.transform.position + camera.transform.rotation * new Vector3(0.0f, 0.0f, camera.GetComponent<CameraMove>().distance);
+
+            //만약 거미줄을 발사할 수 있는 오브젝트가 있을 시
+            if (Physics.Raycast(hitPos, camera.transform.forward, out RaycastHit hit, 100))
+            {
+                grapPoint = hit.point; //해당 오브젝트의 위치 저장
+
+                //SpiringJoint 컴포넌트 추가
+                joint = gameObject.AddComponent<SpringJoint>();
+                joint.autoConfigureConnectedAnchor = false;
+                joint.connectedAnchor = grapPoint; //오브젝트와 조인트 연결
+
+                //조인트의 최대/최소 거리 지정
+                float distanceFromPoint = Vector3.Distance(rightHand.position, grapPoint); //플레이어와 오브젝트 간 거리 찾기
+                joint.maxDistance = distanceFromPoint * 0.5f;
+                joint.minDistance = distanceFromPoint * 0.25f;
+
+                joint.spring = 4.5f;     
+                joint.damper = 7f;      
+                joint.massScale = 4.5f;
+
+                //거미줄 라인렌더러는 시작점과 끝점 두 개만 존재함
+                lineRenderer.positionCount = 2;
+            }
+        }
+        //거미줄 해제
+        else if (Input.GetMouseButtonUp(1))
+        {
+            lineRenderer.positionCount = 0;
+            Destroy(joint);
         }
     }
 }
