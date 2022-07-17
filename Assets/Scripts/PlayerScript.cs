@@ -6,28 +6,18 @@ public class PlayerScript : MonoBehaviour
 {
     [SerializeField] GameObject camera;
     [SerializeField] GameObject playerModel;
-
     [SerializeField] Transform rightHand;
-    [SerializeField] Transform leftHand;
-    
     [SerializeField] GameObject mode1_web;
-    [SerializeField] GameObject mode2_web;
 
-    GameObject attackHitObj; 
-
-    SpringJoint moveJoint; //이동용 거미줄 조인트
-    SpringJoint attackJoint; //공격용 거미줄 조인트 (전투 모드)
+    SpringJoint joint;
 
     Rigidbody rigidbody;
     Animator animator;
-
-    LineRenderer moveLineRenderer; //이동용 거미줄 라인 렌더러
-    LineRenderer attackLineRenderer; //공격용 거미줄 라인 렌더러 (전투 모드)
+    LineRenderer lineRenderer;
 
     Vector3 moveDir; //키보드 입력 방향
     Vector3 playerDir; //입력 방향과 카메라 방향을 조합한 최종 이동 방향
-    Vector3 moveGrapPoint; //이동용 거미줄 발사 방향
-    Vector3 attackGrapPoint; //공격용 거미줄 발사 방향
+    Vector3 grapPoint; //이동용 거미줄 발사 방향
 
     public bool canMove = true;
     bool useDoubleJump;
@@ -35,7 +25,6 @@ public class PlayerScript : MonoBehaviour
     bool isJump;
     bool isClimb;
     bool isFall;
-    public bool isDie;
 
     public int moveSpd = 5; //이동속도
     public int runSpd = 10; //달리기 속도
@@ -49,8 +38,7 @@ public class PlayerScript : MonoBehaviour
     {
         rigidbody = GetComponent<Rigidbody>();
         animator = playerModel.GetComponent<Animator>();
-        moveLineRenderer = GetComponent<LineRenderer>();
-        attackLineRenderer = mode2_web.GetComponent<LineRenderer>();
+        lineRenderer = GetComponent<LineRenderer>();
 
         Cursor.visible = false;
     }
@@ -62,22 +50,19 @@ public class PlayerScript : MonoBehaviour
 
         CheckIsFall(); //낙하 중인지 체크
 
-        if (!isDie)
+        if (canMove)
         {
-            if (canMove)
-            {
-                moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+            moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
-                PlayerMove(); //이동
-                PlayerJump(); //점프
-                PlayerClimb(); //벽 타기
-            }
-
-            PlayerShootMoveWeb(); //이동용 거미줄 발사
-            PlayerShootAttackWeb(); //공격용 거미줄 발사
-
-            ChangeAttackMode(); //공격 모드 변경
+            PlayerMove(); //이동
+            PlayerJump(); //점프
+            PlayerClimb(); //벽 타기
         }
+
+        PlayerShootMoveWeb(); //이동용 거미줄 발사
+        PlayerShootAttackWeb(); //공격용 거미줄 발사
+
+        ChangeAttackMode(); //공격 모드 변경
 
         animator.SetBool("isWalk", moveDir != Vector3.zero);
         animator.SetBool("isRun", moveDir != Vector3.zero && Input.GetAxis("Run") != 0);
@@ -85,20 +70,7 @@ public class PlayerScript : MonoBehaviour
         animator.SetBool("isClimb", isClimb);
         animator.SetBool("isMoveClimb", moveDir != Vector3.zero && isClimb);
         animator.SetBool("isInAir", isFall);
-        animator.SetBool("isSwing", moveJoint);
-    }
-
-    void OnCollisionStay(Collision collision)
-    {
-        if(collision.collider.CompareTag("Enemy"))
-        {
-            //접촉한 적이 공격 중일 시 사망
-            if(collision.collider.GetComponent<EnemyScript>().isAttack)
-            {
-                isDie = true;
-                animator.SetTrigger("isDie");
-            }
-        }
+        animator.SetBool("isSwing", joint);
     }
 
     void CheckIsFall()
@@ -134,7 +106,7 @@ public class PlayerScript : MonoBehaviour
                 transform.forward = playerDir;
 
                 //목표 지점으로 이동
-                if (!moveJoint)
+                if (!joint)
                 {
                     if (Input.GetAxis("Run") != 0) //달리기
                         transform.position += playerDir * runSpd * Time.deltaTime;
@@ -198,9 +170,6 @@ public class PlayerScript : MonoBehaviour
             //벽이 있을 경우
             if (hit.collider != null)
             {
-                if (hit.collider.CompareTag("Enemy"))
-                    return;
-
                 if (!isClimb)
                 {
                     //점프 초기화
@@ -241,11 +210,21 @@ public class PlayerScript : MonoBehaviour
     void PlayerShootMoveWeb()
     {
         //거미줄로 이동 중인가
-        if (moveJoint)
+        if (joint)
         {
             //거미줄 그리기
-            moveLineRenderer.SetPosition(0, rightHand.position);
-            moveLineRenderer.SetPosition(1, moveGrapPoint);
+            lineRenderer.SetPosition(0, rightHand.position);
+            lineRenderer.SetPosition(1, grapPoint);
+
+            //만약 착지했을 시
+            if (!isFall)
+            {
+                //거미줄 삭제
+                lineRenderer.positionCount = 0;
+                Destroy(joint);
+
+                return;
+            }
         }
 
         //거미줄 발사
@@ -257,98 +236,51 @@ public class PlayerScript : MonoBehaviour
             //만약 거미줄을 발사할 수 있는 오브젝트가 있을 시
             if (Physics.Raycast(hitPos, camera.transform.forward, out RaycastHit hit, 100))
             {
-                if (!hit.collider.CompareTag("Enemy"))
-                {
-                    moveGrapPoint = hit.point; //해당 오브젝트의 위치 저장
+                grapPoint = hit.point; //해당 오브젝트의 위치 저장
 
-                    //SpiringJoint 컴포넌트 추가
-                    moveJoint = gameObject.AddComponent<SpringJoint>();
-                    moveJoint.autoConfigureConnectedAnchor = false;
-                    moveJoint.connectedAnchor = moveGrapPoint; //오브젝트와 조인트 연결
+                //SpiringJoint 컴포넌트 추가
+                joint = gameObject.AddComponent<SpringJoint>();
+                joint.autoConfigureConnectedAnchor = false;
+                joint.connectedAnchor = grapPoint; //오브젝트와 조인트 연결
 
-                    //조인트의 최대/최소 거리 지정
-                    float distanceFromPoint = Vector3.Distance(rightHand.position, moveGrapPoint); //플레이어와 오브젝트 간 거리 찾기
-                    moveJoint.maxDistance = distanceFromPoint * 0.5f;
-                    moveJoint.minDistance = distanceFromPoint * 0.25f;
+                //조인트의 최대/최소 거리 지정
+                float distanceFromPoint = Vector3.Distance(rightHand.position, grapPoint); //플레이어와 오브젝트 간 거리 찾기
+                joint.maxDistance = distanceFromPoint * 0.5f;
+                joint.minDistance = distanceFromPoint * 0.25f;
 
-                    moveJoint.spring = 4.5f;
-                    moveJoint.damper = 7f;
-                    moveJoint.massScale = 4.5f;
+                joint.spring = 4.5f;
+                joint.damper = 7f;
+                joint.massScale = 4.5f;
 
-                    //거미줄 라인렌더러는 시작점과 끝점 두 개만 존재함
-                    moveLineRenderer.positionCount = 2;
-                }
+                //거미줄 라인렌더러는 시작점과 끝점 두 개만 존재함
+                lineRenderer.positionCount = 2;
             }
         }
         //거미줄 해제
         else if (Input.GetMouseButtonUp(1))
         {
-            moveLineRenderer.positionCount = 0;
-            Destroy(moveJoint);
+            lineRenderer.positionCount = 0;
+            Destroy(joint);
         }
     }
 
     void PlayerShootAttackWeb()
     {
-        //거미줄로 공격 중인가
-        if (attackJoint)
-        {
-            //전투 모드인가
-            if(attackMode == 2)
-            {
-                attackGrapPoint = attackHitObj.transform.position; //해당 오브젝트의 위치 저장
-                attackJoint.connectedAnchor = transform.position; //오브젝트 조인트와 플레이어 연결
-
-                //거미줄 그리기
-                attackLineRenderer.SetPosition(0, leftHand.position);
-                attackLineRenderer.SetPosition(1, attackGrapPoint);
-            }
-            //속사 모드일 시
-            else
-            {
-                //거미줄 삭제
-                attackLineRenderer.positionCount = 0;
-                Destroy(attackJoint);
-            }
-        }
-
         if (Input.GetMouseButtonDown(0))
         {
             //벽을 오르는 중에는 공격 불가
             if (!isClimb)
             {
+                animator.SetTrigger("isShoot");
+
                 switch (attackMode)
                 {
                     case 1:
                         UseAttackMode1(); //속사 모드
                         break;
                     case 2:
-                        UseAttackMode2(); //전투 모드
+                        //전투 모드
                         break;
-                }
-            }
-        }
-        else if(Input.GetMouseButtonUp(0))
-        {
-            //전투 모드 중 마우스를 뗄 시
-            if(attackMode == 2 && attackJoint)
-            {
-                //거미줄 해제
-                attackLineRenderer.positionCount = 0;
-                Destroy(attackJoint);
-
-                if (attackHitObj != null)
-                {
-                    //일정 시간동안 기절
-                    EnemyScript enemyScript = attackHitObj.GetComponent<EnemyScript>();
-                    enemyScript.isFaint = true;
-                    enemyScript.StartCoroutine("DisableFaint");
-
-                    //카메라 방향으로 날리기
-                    Rigidbody enemyRigid = attackHitObj.GetComponent<Rigidbody>();
-                    enemyRigid.AddForce(camera.transform.forward * 50, ForceMode.Impulse);
-
-                    attackHitObj = null;
                 }
             }
         }
@@ -356,8 +288,6 @@ public class PlayerScript : MonoBehaviour
 
     void UseAttackMode1()
     {
-        animator.SetTrigger("isShoot");
-
         GameObject web = Instantiate(mode1_web);
 
         //현재 캐릭터의 위치 구하기 (카메라 위치 + 카메라와 캐릭터 사이 간격)
@@ -365,39 +295,6 @@ public class PlayerScript : MonoBehaviour
         web.transform.position = charPos;
 
         web.transform.rotation = camera.transform.rotation;
-    }
-
-    void UseAttackMode2()
-    {
-        //현재 캐릭터의 위치 구하기 (카메라 위치 + 카메라와 캐릭터 사이 간격)
-        Vector3 hitPos = camera.transform.position + camera.transform.rotation * new Vector3(0, 0, camera.GetComponent<CameraMove>().distance);
-
-        //만약 거미줄을 발사할 수 있는 오브젝트가 있을 시
-        if (Physics.Raycast(hitPos, camera.transform.forward, out RaycastHit hit, 100))
-        {
-            if(hit.collider.CompareTag("Enemy"))
-            {
-                animator.SetTrigger("isShoot");
-
-                attackHitObj = hit.collider.gameObject;
-
-                //SpiringJoint 컴포넌트 추가
-                attackJoint = hit.collider.gameObject.AddComponent<SpringJoint>();
-                attackJoint.autoConfigureConnectedAnchor = false;
-
-                //조인트의 최대/최소 거리 지정
-                float distanceFromPoint = Vector3.Distance(leftHand.position, attackGrapPoint); //플레이어와 오브젝트 간 거리 찾기
-                attackJoint.maxDistance = distanceFromPoint * 0.7f;
-                attackJoint.minDistance = distanceFromPoint * 0.5f;
-
-                attackJoint.spring = 4f;
-                attackJoint.damper = 5f;
-                attackJoint.massScale = 4.5f;
-
-                //거미줄 라인렌더러는 시작점과 끝점 두 개만 존재함
-                attackLineRenderer.positionCount = 2;
-            }
-        }
     }
 
     void ChangeAttackMode()
