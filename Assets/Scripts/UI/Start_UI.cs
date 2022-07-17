@@ -7,7 +7,7 @@ public class Start_UI : MonoBehaviour
 {
     public void OnclickStartBTN()
     {
-        SceneManager.LoadScene("SampleScene");
+        SceneManager.LoadScene("IngameScene");
     }
 
 

@@ -18,6 +18,7 @@ public class PlayerScript : MonoBehaviour
     Vector3 moveDir; //키보드 입력 방향
     Vector3 playerDir; //입력 방향과 카메라 방향을 조합한 최종 이동 방향
     Vector3 grapPoint; //이동용 거미줄 발사 방향
+
     public bool canMove = true;
     bool useDoubleJump;
 
@@ -29,6 +30,8 @@ public class PlayerScript : MonoBehaviour
     public int runSpd = 10; //달리기 속도
     public int climbSpd = 3; //기어가는 속도
     public int jumpPower; //점프력
+
+    public int attackMode = 1; //공격 모드
 
 
     void Awake()
@@ -58,6 +61,8 @@ public class PlayerScript : MonoBehaviour
 
         PlayerShootMoveWeb(); //이동용 거미줄 발사
         PlayerShootAttackWeb(); //공격용 거미줄 발사
+
+        ChangeAttackMode(); //공격 모드 변경
 
         animator.SetBool("isWalk", moveDir != Vector3.zero);
         animator.SetBool("isRun", moveDir != Vector3.zero && Input.GetAxis("Run") != 0);
@@ -268,8 +273,15 @@ public class PlayerScript : MonoBehaviour
             {
                 animator.SetTrigger("isShoot");
 
-                //속사 모드
-                UseAttackMode1();
+                switch (attackMode)
+                {
+                    case 1:
+                        UseAttackMode1(); //속사 모드
+                        break;
+                    case 2:
+                        //전투 모드
+                        break;
+                }
             }
         }
     }
@@ -283,5 +295,13 @@ public class PlayerScript : MonoBehaviour
         web.transform.position = charPos;
 
         web.transform.rotation = camera.transform.rotation;
+    }
+
+    void ChangeAttackMode()
+    {
+        if (Input.GetKeyDown(KeyCode.Alpha1))
+            attackMode = 1;
+        else if (Input.GetKeyDown(KeyCode.Alpha2))
+            attackMode = 2;
     }
 }
