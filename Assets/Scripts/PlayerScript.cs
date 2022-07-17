@@ -181,6 +181,9 @@ public class PlayerScript : MonoBehaviour
             //벽이 있을 경우
             if (hit.collider != null)
             {
+                if (hit.collider.CompareTag("Enemy"))
+                    return;
+
                 if (!isClimb)
                 {
                     //점프 초기화
@@ -226,16 +229,6 @@ public class PlayerScript : MonoBehaviour
             //거미줄 그리기
             moveLineRenderer.SetPosition(0, rightHand.position);
             moveLineRenderer.SetPosition(1, moveGrapPoint);
-
-            //만약 착지했을 시
-            if (!isFall)
-            {
-                //거미줄 삭제
-                moveLineRenderer.positionCount = 0;
-                Destroy(moveJoint);
-
-                return;
-            }
         }
 
         //거미줄 발사
@@ -247,24 +240,27 @@ public class PlayerScript : MonoBehaviour
             //만약 거미줄을 발사할 수 있는 오브젝트가 있을 시
             if (Physics.Raycast(hitPos, camera.transform.forward, out RaycastHit hit, 100))
             {
-                moveGrapPoint = hit.point; //해당 오브젝트의 위치 저장
+                if (!hit.collider.CompareTag("Enemy"))
+                {
+                    moveGrapPoint = hit.point; //해당 오브젝트의 위치 저장
 
-                //SpiringJoint 컴포넌트 추가
-                moveJoint = gameObject.AddComponent<SpringJoint>();
-                moveJoint.autoConfigureConnectedAnchor = false;
-                moveJoint.connectedAnchor = moveGrapPoint; //오브젝트와 조인트 연결
+                    //SpiringJoint 컴포넌트 추가
+                    moveJoint = gameObject.AddComponent<SpringJoint>();
+                    moveJoint.autoConfigureConnectedAnchor = false;
+                    moveJoint.connectedAnchor = moveGrapPoint; //오브젝트와 조인트 연결
 
-                //조인트의 최대/최소 거리 지정
-                float distanceFromPoint = Vector3.Distance(rightHand.position, moveGrapPoint); //플레이어와 오브젝트 간 거리 찾기
-                moveJoint.maxDistance = distanceFromPoint * 0.5f;
-                moveJoint.minDistance = distanceFromPoint * 0.25f;
+                    //조인트의 최대/최소 거리 지정
+                    float distanceFromPoint = Vector3.Distance(rightHand.position, moveGrapPoint); //플레이어와 오브젝트 간 거리 찾기
+                    moveJoint.maxDistance = distanceFromPoint * 0.5f;
+                    moveJoint.minDistance = distanceFromPoint * 0.25f;
 
-                moveJoint.spring = 4.5f;
-                moveJoint.damper = 7f;
-                moveJoint.massScale = 4.5f;
+                    moveJoint.spring = 4.5f;
+                    moveJoint.damper = 7f;
+                    moveJoint.massScale = 4.5f;
 
-                //거미줄 라인렌더러는 시작점과 끝점 두 개만 존재함
-                moveLineRenderer.positionCount = 2;
+                    //거미줄 라인렌더러는 시작점과 끝점 두 개만 존재함
+                    moveLineRenderer.positionCount = 2;
+                }
             }
         }
         //거미줄 해제
@@ -334,6 +330,8 @@ public class PlayerScript : MonoBehaviour
                     //카메라 방향으로 날리기
                     Rigidbody enemyRigid = attackHitObj.GetComponent<Rigidbody>();
                     enemyRigid.AddForce(camera.transform.forward * 50, ForceMode.Impulse);
+
+                    attackHitObj = null;
                 }
             }
         }
