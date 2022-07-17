@@ -7,6 +7,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] GameObject camera;
     [SerializeField] GameObject playerModel;
     [SerializeField] Transform rightHand;
+    [SerializeField] GameObject mode1_web;
 
     SpringJoint joint;
 
@@ -14,7 +15,8 @@ public class PlayerScript : MonoBehaviour
     Animator animator;
     LineRenderer lineRenderer;
 
-    Vector3 moveDir; //이동 방향
+    Vector3 moveDir; //키보드 입력 방향
+    Vector3 playerDir; //입력 방향과 카메라 방향을 조합한 최종 이동 방향
     Vector3 grapPoint; //이동용 거미줄 발사 방향
     public bool canMove = true;
     bool useDoubleJump;
@@ -34,6 +36,8 @@ public class PlayerScript : MonoBehaviour
         rigidbody = GetComponent<Rigidbody>();
         animator = playerModel.GetComponent<Animator>();
         lineRenderer = GetComponent<LineRenderer>();
+
+        Cursor.visible = false;
     }
 
     void Update()
@@ -53,7 +57,7 @@ public class PlayerScript : MonoBehaviour
         }
 
         PlayerShootMoveWeb(); //이동용 거미줄 발사
-
+        PlayerShootAttackWeb(); //공격용 거미줄 발사
 
         animator.SetBool("isWalk", moveDir != Vector3.zero);
         animator.SetBool("isRun", moveDir != Vector3.zero && Input.GetAxis("Run") != 0);
@@ -69,7 +73,7 @@ public class PlayerScript : MonoBehaviour
         if (Physics.Raycast(transform.position, -transform.up, out RaycastHit hit, 0.1f))
         {
             //바닥에 착지했을 시
-            if(hit.collider != null)
+            if (hit.collider != null)
             {
                 isFall = false;
                 isJump = false;
@@ -77,7 +81,7 @@ public class PlayerScript : MonoBehaviour
             }
         }
         //낙하 중일 시
-        else if(hit.collider == null)
+        else if (hit.collider == null)
         {
             isFall = true;
         }
@@ -93,7 +97,7 @@ public class PlayerScript : MonoBehaviour
                 //이동 방향으로 플레이어 회전
                 Vector3 camForward = new Vector3(camera.transform.forward.x, 0, camera.transform.forward.z).normalized;
                 Vector3 camRight = new Vector3(camera.transform.right.x, 0, camera.transform.right.z).normalized;
-                Vector3 playerDir = camForward * moveDir.z + camRight * moveDir.x; //플레이어의 방향은 카메라의 벡터값과 키보드 입력값을 통해 구함
+                playerDir = camForward * moveDir.z + camRight * moveDir.x; //플레이어의 방향은 카메라의 벡터값과 키보드 입력값을 통해 구함
                 transform.forward = playerDir;
 
                 //목표 지점으로 이동
@@ -140,7 +144,7 @@ public class PlayerScript : MonoBehaviour
                 return;
             }
             //2단 점프
-            else if(!useDoubleJump)
+            else if (!useDoubleJump)
             {
                 animator.SetTrigger("isDoubleJump");
 
@@ -181,7 +185,7 @@ public class PlayerScript : MonoBehaviour
             }
         }
         //벽이 없을 경우
-        else if(isClimb && hit.collider == null)
+        else if (isClimb && hit.collider == null)
         {
             isClimb = false;
 
@@ -191,7 +195,7 @@ public class PlayerScript : MonoBehaviour
         }
 
         //벽을 오르는 중이 아닐 시
-        if(!isClimb)
+        if (!isClimb)
         {
             //중력 활성화
             rigidbody.useGravity = true;
@@ -208,7 +212,7 @@ public class PlayerScript : MonoBehaviour
             lineRenderer.SetPosition(1, grapPoint);
 
             //만약 착지했을 시
-            if(!isFall)
+            if (!isFall)
             {
                 //거미줄 삭제
                 lineRenderer.positionCount = 0;
@@ -222,7 +226,7 @@ public class PlayerScript : MonoBehaviour
         if (Input.GetMouseButtonDown(1))
         {
             //현재 캐릭터의 위치 구하기 (카메라 위치 + 카메라와 캐릭터 사이 간격)
-            Vector3 hitPos = camera.transform.position + camera.transform.rotation * new Vector3(0.0f, 0.0f, camera.GetComponent<CameraMove>().distance);
+            Vector3 hitPos = camera.transform.position + camera.transform.rotation * new Vector3(0, 0, camera.GetComponent<CameraMove>().distance);
 
             //만약 거미줄을 발사할 수 있는 오브젝트가 있을 시
             if (Physics.Raycast(hitPos, camera.transform.forward, out RaycastHit hit, 100))
@@ -239,8 +243,8 @@ public class PlayerScript : MonoBehaviour
                 joint.maxDistance = distanceFromPoint * 0.5f;
                 joint.minDistance = distanceFromPoint * 0.25f;
 
-                joint.spring = 4.5f;     
-                joint.damper = 7f;      
+                joint.spring = 4.5f;
+                joint.damper = 7f;
                 joint.massScale = 4.5f;
 
                 //거미줄 라인렌더러는 시작점과 끝점 두 개만 존재함
@@ -253,5 +257,31 @@ public class PlayerScript : MonoBehaviour
             lineRenderer.positionCount = 0;
             Destroy(joint);
         }
+    }
+
+    void PlayerShootAttackWeb()
+    {
+        if (Input.GetMouseButtonDown(0))
+        {
+            //벽을 오르는 중에는 공격 불가
+            if (!isClimb)
+            {
+                animator.SetTrigger("isShoot");
+
+                //속사 모드
+                UseAttackMode1();
+            }
+        }
+    }
+
+    void UseAttackMode1()
+    {
+        GameObject web = Instantiate(mode1_web);
+
+        //현재 캐릭터의 위치 구하기 (카메라 위치 + 카메라와 캐릭터 사이 간격)
+        Vector3 charPos = camera.transform.position + camera.transform.rotation * new Vector3(0, 0, camera.GetComponent<CameraMove>().distance + 0.3f);
+        web.transform.position = charPos;
+
+        web.transform.rotation = camera.transform.rotation;
     }
 }

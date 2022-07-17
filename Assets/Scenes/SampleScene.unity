@@ -326,7 +326,7 @@ GameObject:
   - component: {fileID: 735678372}
   m_Layer: 0
   m_Name: Player
-  m_TagString: Untagged
+  m_TagString: Player
   m_Icon: {fileID: 0}
   m_NavMeshLayer: 0
   m_StaticEditorFlags: 0
@@ -362,6 +362,7 @@ MonoBehaviour:
   camera: {fileID: 963194225}
   playerModel: {fileID: 2065754147}
   rightHand: {fileID: 1840647352}
+  mode1_web: {fileID: 7120249009845531179, guid: 02a1c1c5a9093f24a90786ec0f23e7d0, type: 3}
   canMove: 1
   moveSpd: 5
   runSpd: 10
