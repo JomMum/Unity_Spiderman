@@ -35,6 +35,7 @@ public class PlayerScript : MonoBehaviour
     bool isJump;
     bool isClimb;
     bool isFall;
+    public bool isDie;
 
     public int moveSpd = 5; //이동속도
     public int runSpd = 10; //달리기 속도
@@ -61,19 +62,22 @@ public class PlayerScript : MonoBehaviour
 
         CheckIsFall(); //낙하 중인지 체크
 
-        if (canMove)
+        if (!isDie)
         {
-            moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
+            if (canMove)
+            {
+                moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
-            PlayerMove(); //이동
-            PlayerJump(); //점프
-            PlayerClimb(); //벽 타기
+                PlayerMove(); //이동
+                PlayerJump(); //점프
+                PlayerClimb(); //벽 타기
+            }
+
+            PlayerShootMoveWeb(); //이동용 거미줄 발사
+            PlayerShootAttackWeb(); //공격용 거미줄 발사
+
+            ChangeAttackMode(); //공격 모드 변경
         }
-
-        PlayerShootMoveWeb(); //이동용 거미줄 발사
-        PlayerShootAttackWeb(); //공격용 거미줄 발사
-
-        ChangeAttackMode(); //공격 모드 변경
 
         animator.SetBool("isWalk", moveDir != Vector3.zero);
         animator.SetBool("isRun", moveDir != Vector3.zero && Input.GetAxis("Run") != 0);
@@ -82,6 +86,19 @@ public class PlayerScript : MonoBehaviour
         animator.SetBool("isMoveClimb", moveDir != Vector3.zero && isClimb);
         animator.SetBool("isInAir", isFall);
         animator.SetBool("isSwing", moveJoint);
+    }
+
+    void OnCollisionStay(Collision collision)
+    {
+        if(collision.collider.CompareTag("Enemy"))
+        {
+            //접촉한 적이 공격 중일 시 사망
+            if(collision.collider.GetComponent<EnemyScript>().isAttack)
+            {
+                isDie = true;
+                animator.SetTrigger("isDie");
+            }
+        }
     }
 
     void CheckIsFall()

@@ -5,6 +5,8 @@ using UnityEngine;
 public class EnemyScript : MonoBehaviour
 {
     public bool isFaint; //전투 모드에 의해 기절 상태인가
+    public bool isAttack;
+
     GameObject groundObj; //현재 발 밑에 있는 오브젝트
 
     void Update()
