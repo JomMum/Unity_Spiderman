@@ -5,6 +5,7 @@ using UnityEngine;
 public class EnemyScript : MonoBehaviour
 {
     [SerializeField] GameObject enemyModel;
+    [SerializeField] OverSCript resultScript;
 
     Animator animator;
 
@@ -103,6 +104,9 @@ public class EnemyScript : MonoBehaviour
             animator.SetTrigger("isDie");
 
             StartCoroutine(nameof(DestroyEnemy));
+
+            resultScript.isGameClear = true;
+            resultScript.StartCoroutine(nameof(resultScript.UiScript));
         }
     }
 

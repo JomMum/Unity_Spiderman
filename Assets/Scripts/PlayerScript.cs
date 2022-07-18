@@ -13,6 +13,8 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] GameObject mode1_web;
     [SerializeField] GameObject mode2_web;
 
+    [SerializeField] OverSCript resultScript;
+
     GameObject attackHitObj;
     EnemyScript attackMode2_EnemyScript;
 
@@ -98,6 +100,9 @@ public class PlayerScript : MonoBehaviour
                 //Àû°ú Á¢ÃËÇÒ ½Ã »ç¸Á
                 isDie = true;
                 animator.SetTrigger("isDie");
+
+                resultScript.isGameOver = true;
+                resultScript.StartCoroutine(nameof(resultScript.UiScript));
             }
         }
     }

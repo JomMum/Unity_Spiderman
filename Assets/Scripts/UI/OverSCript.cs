@@ -6,46 +6,38 @@ using UnityEngine.SceneManagement;
 
 public class OverSCript : MonoBehaviour
 {
-    public CanvasGroup UI;
+    public bool isGameOver;
+    public bool isGameClear;
 
-    private void Start()
-    {
-        UI = GetComponent<CanvasGroup>();
-    }
-    void Update()
-    {
-        StartCoroutine("UiScript");
-    }
-
+    [SerializeField] CanvasGroup GameOverUI;
+    [SerializeField] CanvasGroup GameClearUI;
 
     public IEnumerator UiScript()
     {
-        for (int i = 0; i < 100; i++)
+        Cursor.visible = true;
+
+        CanvasGroup UI;
+
+        if (isGameClear)
+            UI = GameClearUI;
+        else
+            UI = GameOverUI;
+
+        for (int i = 0; i < 10; i++)
         {
             yield return new WaitForSeconds(0.1f);
-            UI.alpha += 0.01f;
-
-            if (UI.alpha != 1)
-            {
-                UI.interactable = false;
-            }
-            
-            if(UI.alpha == 1)
-            {
-                UI.interactable = true;
-            }
-
+            UI.alpha += 0.1f;
         }
+
+        UI.interactable = true;
     }
     public void OnclickReBtn()
     {
-        SceneManager.LoadScene("UI_Scene");
+        SceneManager.LoadScene("IngameScene");
     }
 
     public void OnclickMainBtn()
     {
         SceneManager.LoadScene("StartScene");
-
-        print("´­·¶");
     }
 }

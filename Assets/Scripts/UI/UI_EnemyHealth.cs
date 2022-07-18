@@ -5,7 +5,9 @@ using UnityEngine.UI;
 
 public class UI_EnemyHealth : MonoBehaviour
 {
+    [SerializeField] EnemyScript enemyScript;
     public Image image;
+
 
     void Start()
     {
@@ -14,9 +16,6 @@ public class UI_EnemyHealth : MonoBehaviour
 
     void Update()
     {
-      if(Input.GetKeyDown(KeyCode.E))
-      {
-            image.fillAmount -= 0.1f;
-      }
+        image.fillAmount = enemyScript.enemyCurHP / (float)enemyScript.enemyMaxHP;
     }
 }
