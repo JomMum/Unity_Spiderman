@@ -8,8 +8,11 @@ public class Collision : MonoBehaviour
 
     private void OnTriggerEnter(Collider other)
     {
-        canvas.SetActive(true);
-        Invoke(nameof(DisableCanvas), 3);
+        if(other.gameObject.CompareTag("Player"))
+        {
+            canvas.SetActive(true);
+            Invoke(nameof(DisableCanvas), 3);
+        }
     }
 
     void DisableCanvas()

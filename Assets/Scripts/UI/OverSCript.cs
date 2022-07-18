@@ -9,8 +9,12 @@ public class OverSCript : MonoBehaviour
     public bool isGameOver;
     public bool isGameClear;
 
+    [SerializeField] Timer timerManager;
+
     [SerializeField] CanvasGroup GameOverUI;
     [SerializeField] CanvasGroup GameClearUI;
+
+    [SerializeField] Text timeText;
 
     public IEnumerator UiScript()
     {
@@ -19,7 +23,10 @@ public class OverSCript : MonoBehaviour
         CanvasGroup UI;
 
         if (isGameClear)
+        {
+            timeText.text = "TIME " + timerManager.Min + " : " + Mathf.RoundToInt(timerManager.sec);
             UI = GameClearUI;
+        }
         else
             UI = GameOverUI;
 
