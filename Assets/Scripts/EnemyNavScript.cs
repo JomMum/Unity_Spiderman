@@ -5,23 +5,53 @@ using UnityEngine.AI;
 
 public class EnemyNavScript : MonoBehaviour
 {
-    public bool isAttacted = false;
-    GameObject targets = null; 
+    public GameObject targets = null; 
     
-    NavMeshAgent nav = null;
+    NavMeshAgent nav;
+    EnemyScript enemyScript;
   
     void Start()
     {
         nav = GetComponent<NavMeshAgent>();
+        enemyScript = GetComponent<EnemyScript>();
     }
 
     void Update()
     {
-        //타겟 발견 시 타겟을 향해 이동
-        if(targets != null)
+        if (!enemyScript.isDie)
         {
-            Debug.Log(targets);
-            nav.SetDestination(targets.transform.position);
+            //이동 가능 상태가 아니거나 기절 상태일 때는 이동 불가
+            if (enemyScript.canMove &&
+                !enemyScript.isFaint)
+            {
+                if (nav.enabled == false)
+                    nav.enabled = true;
+
+                //타겟 발견 시 타겟을 향해 이동
+                if (targets != null)
+                {
+                    enemyScript.isMove = true;
+                    nav.SetDestination(targets.transform.position);
+                }
+                //아닐 시 이동 정지
+                else
+                {
+                    enemyScript.isMove = false;
+                }
+            }
+            else
+            {
+                enemyScript.isMove = false;
+
+                nav.enabled = false;
+            }
+        }
+        //죽었을 시
+        else
+        {
+            enemyScript.isMove = false;
+
+            nav.enabled = false;
         }
     }
 
@@ -32,7 +62,6 @@ public class EnemyNavScript : MonoBehaviour
         {
             //해당 플레이어 저장
             targets = other.gameObject;
-            print("발견");
         }
     }
 
@@ -49,9 +78,7 @@ public class EnemyNavScript : MonoBehaviour
     {
         targets = null;
 
+        if(nav.isOnNavMesh)
+            nav.SetDestination(transform.position);
     }
 }
-       
-        
-        
-    

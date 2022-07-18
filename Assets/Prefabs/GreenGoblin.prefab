@@ -10,11 +10,11 @@ GameObject:
   m_Component:
   - component: {fileID: 4673780045221545575}
   - component: {fileID: 8629675050360541560}
+  - component: {fileID: 610856774}
   - component: {fileID: 6621287246991356622}
   - component: {fileID: 7566222500240724559}
   - component: {fileID: 610856775}
   - component: {fileID: 610856769}
-  - component: {fileID: 610856774}
   m_Layer: 6
   m_Name: GreenGoblin
   m_TagString: Enemy
@@ -49,8 +49,23 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: 3bce02f1a345114498000cb72f5f442c, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
+  enemyModel: {fileID: 9089786823780458817}
   isFaint: 0
   isAttack: 0
+  isMove: 0
+--- !u!114 &610856774
+MonoBehaviour:
+  m_ObjectHideFlags: 0
+  m_CorrespondingSourceObject: {fileID: 0}
+  m_PrefabInstance: {fileID: 0}
+  m_PrefabAsset: {fileID: 0}
+  m_GameObject: {fileID: 1471352574977465440}
+  m_Enabled: 1
+  m_EditorHideFlags: 0
+  m_Script: {fileID: 11500000, guid: a20ae4917a36e494f877d3d1eea15974, type: 3}
+  m_Name: 
+  m_EditorClassIdentifier: 
+  isAttacted: 0
 --- !u!54 &6621287246991356622
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -116,24 +131,6 @@ NavMeshAgent:
   m_BaseOffset: 0
   m_WalkableMask: 4294967295
   m_ObstacleAvoidanceType: 4
---- !u!114 &610856774
-MonoBehaviour:
-  m_ObjectHideFlags: 0
-  m_CorrespondingSourceObject: {fileID: 0}
-  m_PrefabInstance: {fileID: 0}
-  m_PrefabAsset: {fileID: 0}
-  m_GameObject: {fileID: 1471352574977465440}
-  m_Enabled: 1
-  m_EditorHideFlags: 0
-  m_Script: {fileID: 11500000, guid: a20ae4917a36e494f877d3d1eea15974, type: 3}
-  m_Name: 
-  m_EditorClassIdentifier: 
-  Waypoints:
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  - {fileID: 0}
-  targets: {fileID: 0}
 --- !u!1001 &8278743274504117264
 PrefabInstance:
   m_ObjectHideFlags: 0
@@ -463,6 +460,11 @@ PrefabInstance:
       objectReference: {fileID: 0}
     m_RemovedComponents: []
   m_SourcePrefab: {fileID: 100100000, guid: 3ebbe962b16dc5348ba5c4f55bded3f3, type: 3}
+--- !u!1 &9089786823780458817 stripped
+GameObject:
+  m_CorrespondingSourceObject: {fileID: 919132149155446097, guid: 3ebbe962b16dc5348ba5c4f55bded3f3, type: 3}
+  m_PrefabInstance: {fileID: 8278743274504117264}
+  m_PrefabAsset: {fileID: 0}
 --- !u!4 &8461903439075851259 stripped
 Transform:
   m_CorrespondingSourceObject: {fileID: -8679921383154817045, guid: 3ebbe962b16dc5348ba5c4f55bded3f3, type: 3}

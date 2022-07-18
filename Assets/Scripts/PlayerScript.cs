@@ -13,7 +13,8 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] GameObject mode1_web;
     [SerializeField] GameObject mode2_web;
 
-    GameObject attackHitObj; 
+    GameObject attackHitObj;
+    EnemyScript attackMode2_EnemyScript;
 
     SpringJoint moveJoint; //이동용 거미줄 조인트
     SpringJoint attackJoint; //공격용 거미줄 조인트 (전투 모드)
@@ -92,9 +93,9 @@ public class PlayerScript : MonoBehaviour
     {
         if(collision.collider.CompareTag("Enemy"))
         {
-            //접촉한 적이 공격 중일 시 사망
-            if(collision.collider.GetComponent<EnemyScript>().isAttack)
+            if (!isDie)
             {
+                //적과 접촉할 시 사망
                 isDie = true;
                 animator.SetTrigger("isDie");
             }
@@ -296,6 +297,11 @@ public class PlayerScript : MonoBehaviour
             //전투 모드인가
             if(attackMode == 2)
             {
+                if(attackMode2_EnemyScript == null)
+                    attackMode2_EnemyScript = attackHitObj.GetComponent<EnemyScript>();
+
+                attackMode2_EnemyScript.isFaint = true; //적 기절 상태
+
                 attackGrapPoint = attackHitObj.transform.position; //해당 오브젝트의 위치 저장
                 attackJoint.connectedAnchor = transform.position; //오브젝트 조인트와 플레이어 연결
 
@@ -339,16 +345,15 @@ public class PlayerScript : MonoBehaviour
 
                 if (attackHitObj != null)
                 {
-                    //일정 시간동안 기절
-                    EnemyScript enemyScript = attackHitObj.GetComponent<EnemyScript>();
-                    enemyScript.isFaint = true;
-                    enemyScript.StartCoroutine("DisableFaint");
+                    //일정 시간 후 기절 해제
+                    attackMode2_EnemyScript.StartCoroutine(nameof(attackMode2_EnemyScript.DisableFaint), 3);
 
                     //카메라 방향으로 날리기
                     Rigidbody enemyRigid = attackHitObj.GetComponent<Rigidbody>();
                     enemyRigid.AddForce(camera.transform.forward * 50, ForceMode.Impulse);
 
                     attackHitObj = null;
+                    attackMode2_EnemyScript = null;
                 }
             }
         }
@@ -377,25 +382,28 @@ public class PlayerScript : MonoBehaviour
         {
             if(hit.collider.CompareTag("Enemy"))
             {
-                animator.SetTrigger("isShoot");
+                if (!hit.collider.gameObject.GetComponent<EnemyScript>().isDie)
+                {
+                    animator.SetTrigger("isShoot");
 
-                attackHitObj = hit.collider.gameObject;
+                    attackHitObj = hit.collider.gameObject;
 
-                //SpiringJoint 컴포넌트 추가
-                attackJoint = hit.collider.gameObject.AddComponent<SpringJoint>();
-                attackJoint.autoConfigureConnectedAnchor = false;
+                    //SpiringJoint 컴포넌트 추가
+                    attackJoint = hit.collider.gameObject.AddComponent<SpringJoint>();
+                    attackJoint.autoConfigureConnectedAnchor = false;
 
-                //조인트의 최대/최소 거리 지정
-                float distanceFromPoint = Vector3.Distance(leftHand.position, attackGrapPoint); //플레이어와 오브젝트 간 거리 찾기
-                attackJoint.maxDistance = distanceFromPoint * 0.7f;
-                attackJoint.minDistance = distanceFromPoint * 0.5f;
+                    //조인트의 최대/최소 거리 지정
+                    float distanceFromPoint = Vector3.Distance(leftHand.position, attackGrapPoint); //플레이어와 오브젝트 간 거리 찾기
+                    attackJoint.maxDistance = distanceFromPoint * 0.7f;
+                    attackJoint.minDistance = distanceFromPoint * 0.5f;
 
-                attackJoint.spring = 4f;
-                attackJoint.damper = 5f;
-                attackJoint.massScale = 4.5f;
+                    attackJoint.spring = 4f;
+                    attackJoint.damper = 5f;
+                    attackJoint.massScale = 4.5f;
 
-                //거미줄 라인렌더러는 시작점과 끝점 두 개만 존재함
-                attackLineRenderer.positionCount = 2;
+                    //거미줄 라인렌더러는 시작점과 끝점 두 개만 존재함
+                    attackLineRenderer.positionCount = 2;
+                }
             }
         }
     }

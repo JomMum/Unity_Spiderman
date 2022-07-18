@@ -30,6 +30,15 @@ public class WebScript : MonoBehaviour
         //플레이어 외에 다른 오브젝트와 충돌 시 삭제
         if(!other.gameObject.CompareTag("Player"))
         {
+            if (other.gameObject.CompareTag("Enemy"))
+            {
+                if (!other.gameObject.GetComponent<EnemyScript>().isDie)
+                {
+                    Rigidbody rigidbody = other.gameObject.GetComponent<Rigidbody>();
+                    rigidbody.AddForce(transform.forward * 10, ForceMode.Impulse);
+                }
+            }
+
             Destroy(gameObject);
         }
     }
