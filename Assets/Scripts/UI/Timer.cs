@@ -21,7 +21,7 @@ public class Timer : MonoBehaviour
     void TImer()
     {
         sec += Time.deltaTime;
-        _Timer.text = string.Format("Timer :" + "{0:d2}:{1:d2}", Min, (int)sec);
+        _Timer.text = string.Format("Timer " + "{0:00}:{1:00}", Min, (int)sec);
 
         if((int)sec >59)
         {

@@ -16,19 +16,19 @@ public class PlayerScript : MonoBehaviour
     GameObject attackHitObj;
     EnemyScript attackMode2_EnemyScript;
 
-    SpringJoint moveJoint; //ÀÌµ¿¿ë °Å¹ÌÁÙ Á¶ÀÎÆ®
-    SpringJoint attackJoint; //°ø°Ý¿ë °Å¹ÌÁÙ Á¶ÀÎÆ® (ÀüÅõ ¸ðµå)
+    SpringJoint moveJoint; //ï¿½Ìµï¿½ï¿½ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ®
+    SpringJoint attackJoint; //ï¿½ï¿½ï¿½Ý¿ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
 
     Rigidbody rigidbody;
     Animator animator;
 
-    LineRenderer moveLineRenderer; //ÀÌµ¿¿ë °Å¹ÌÁÙ ¶óÀÎ ·»´õ·¯
-    LineRenderer attackLineRenderer; //°ø°Ý¿ë °Å¹ÌÁÙ ¶óÀÎ ·»´õ·¯ (ÀüÅõ ¸ðµå)
+    LineRenderer moveLineRenderer; //ï¿½Ìµï¿½ï¿½ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
+    LineRenderer attackLineRenderer; //ï¿½ï¿½ï¿½Ý¿ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ (ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½)
 
-    Vector3 moveDir; //Å°º¸µå ÀÔ·Â ¹æÇâ
-    Vector3 playerDir; //ÀÔ·Â ¹æÇâ°ú Ä«¸Þ¶ó ¹æÇâÀ» Á¶ÇÕÇÑ ÃÖÁ¾ ÀÌµ¿ ¹æÇâ
-    Vector3 moveGrapPoint; //ÀÌµ¿¿ë °Å¹ÌÁÙ ¹ß»ç ¹æÇâ
-    Vector3 attackGrapPoint; //°ø°Ý¿ë °Å¹ÌÁÙ ¹ß»ç ¹æÇâ
+    Vector3 moveDir; //Å°ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ï¿½
+    Vector3 playerDir; //ï¿½Ô·ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½
+    Vector3 moveGrapPoint; //ï¿½Ìµï¿½ï¿½ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½
+    Vector3 attackGrapPoint; //ï¿½ï¿½ï¿½Ý¿ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ ï¿½ï¿½ï¿½ï¿½
 
     public bool canMove = true;
     bool useDoubleJump;
@@ -38,12 +38,12 @@ public class PlayerScript : MonoBehaviour
     bool isFall;
     public bool isDie;
 
-    public int moveSpd = 5; //ÀÌµ¿¼Óµµ
-    public int runSpd = 10; //´Þ¸®±â ¼Óµµ
-    public int climbSpd = 3; //±â¾î°¡´Â ¼Óµµ
-    public int jumpPower; //Á¡ÇÁ·Â
+    public int moveSpd = 5; //ï¿½Ìµï¿½ï¿½Óµï¿½
+    public int runSpd = 10; //ï¿½Þ¸ï¿½ï¿½ï¿½ ï¿½Óµï¿½
+    public int climbSpd = 3; //ï¿½ï¿½î°¡ï¿½ï¿½ ï¿½Óµï¿½
+    public int jumpPower; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
 
-    public int attackMode = 1; //°ø°Ý ¸ðµå
+    public int attackMode = 1; //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
 
 
     void Awake()
@@ -58,10 +58,10 @@ public class PlayerScript : MonoBehaviour
 
     void Update()
     {
-        //ÇÃ·¹ÀÌ¾î ¸ðµ¨ ÀÚÃ¼´Â À§Ä¡°¡ º¯°æµÇÁö ¾Ê´Â´Ù
+        //ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Â´ï¿½
         playerModel.transform.localPosition = new Vector3(0, 0, 0);
 
-        CheckIsFall(); //³«ÇÏ ÁßÀÎÁö Ã¼Å©
+        CheckIsFall(); //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
 
         if (!isDie)
         {
@@ -69,15 +69,15 @@ public class PlayerScript : MonoBehaviour
             {
                 moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
-                PlayerMove(); //ÀÌµ¿
-                PlayerJump(); //Á¡ÇÁ
-                PlayerClimb(); //º® Å¸±â
+                PlayerMove(); //ï¿½Ìµï¿½
+                PlayerJump(); //ï¿½ï¿½ï¿½ï¿½
+                PlayerClimb(); //ï¿½ï¿½ Å¸ï¿½ï¿½
             }
 
-            PlayerShootMoveWeb(); //ÀÌµ¿¿ë °Å¹ÌÁÙ ¹ß»ç
-            PlayerShootAttackWeb(); //°ø°Ý¿ë °Å¹ÌÁÙ ¹ß»ç
+            PlayerShootMoveWeb(); //ï¿½Ìµï¿½ï¿½ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ß»ï¿½
+            PlayerShootAttackWeb(); //ï¿½ï¿½ï¿½Ý¿ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ß»ï¿½
 
-            ChangeAttackMode(); //°ø°Ý ¸ðµå º¯°æ
+            ChangeAttackMode(); //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         }
 
         animator.SetBool("isWalk", moveDir != Vector3.zero);
@@ -91,11 +91,11 @@ public class PlayerScript : MonoBehaviour
 
     void OnCollisionStay(Collision collision)
     {
-        if(collision.collider.CompareTag("Enemy"))
+        if(collision.GetComponent<Collider>().CompareTag("Enemy"))
         {
             if (!isDie)
             {
-                //Àû°ú Á¢ÃËÇÒ ½Ã »ç¸Á
+                //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½
                 isDie = true;
                 animator.SetTrigger("isDie");
             }
@@ -106,7 +106,7 @@ public class PlayerScript : MonoBehaviour
     {
         if (Physics.Raycast(transform.position, -transform.up, out RaycastHit hit, 0.1f))
         {
-            //¹Ù´Ú¿¡ ÂøÁöÇßÀ» ½Ã
+            //ï¿½Ù´Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
             if (hit.collider != null)
             {
                 isFall = false;
@@ -114,7 +114,7 @@ public class PlayerScript : MonoBehaviour
                 useDoubleJump = false;
             }
         }
-        //³«ÇÏ ÁßÀÏ ½Ã
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
         else if (hit.collider == null)
         {
             isFall = true;
@@ -125,29 +125,29 @@ public class PlayerScript : MonoBehaviour
     {
         if (!isClimb)
         {
-            //ÀÌµ¿ ÁßÀÏ ½Ã
+            //ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
             if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
             {
-                //ÀÌµ¿ ¹æÇâÀ¸·Î ÇÃ·¹ÀÌ¾î È¸Àü
+                //ï¿½Ìµï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ È¸ï¿½ï¿½
                 Vector3 camForward = new Vector3(camera.transform.forward.x, 0, camera.transform.forward.z).normalized;
                 Vector3 camRight = new Vector3(camera.transform.right.x, 0, camera.transform.right.z).normalized;
-                playerDir = camForward * moveDir.z + camRight * moveDir.x; //ÇÃ·¹ÀÌ¾îÀÇ ¹æÇâÀº Ä«¸Þ¶óÀÇ º¤ÅÍ°ª°ú Å°º¸µå ÀÔ·Â°ªÀ» ÅëÇØ ±¸ÇÔ
+                playerDir = camForward * moveDir.z + camRight * moveDir.x; //ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä«ï¿½Þ¶ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í°ï¿½ï¿½ï¿½ Å°ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·Â°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 transform.forward = playerDir;
 
-                //¸ñÇ¥ ÁöÁ¡À¸·Î ÀÌµ¿
+                //ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
                 if (!moveJoint)
                 {
-                    if (Input.GetAxis("Run") != 0) //´Þ¸®±â
+                    if (Input.GetAxis("Run") != 0) //ï¿½Þ¸ï¿½ï¿½ï¿½
                         transform.position += playerDir * runSpd * Time.deltaTime;
-                    else //°È±â
+                    else //ï¿½È±ï¿½
                         transform.position += playerDir * moveSpd * Time.deltaTime;
                 }
-                //°Å¹ÌÁÙ·Î ¸ñÇ¥ ÁöÁ¡ ÀÌµ¿
+                //ï¿½Å¹ï¿½ï¿½Ù·ï¿½ ï¿½ï¿½Ç¥ ï¿½ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
                 else
                 {
-                    if (Input.GetAxis("Run") != 0) //ºü¸¥ °Å¹ÌÁÙ ÀÌµ¿
+                    if (Input.GetAxis("Run") != 0) //ï¿½ï¿½ï¿½ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
                         transform.position += playerDir * runSpd * 2f * Time.deltaTime;
-                    else //°Å¹ÌÁÙ ÀÌµ¿
+                    else //ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½Ìµï¿½
                         transform.position += playerDir * moveSpd * 2f * Time.deltaTime;
                 }
             }
@@ -158,26 +158,26 @@ public class PlayerScript : MonoBehaviour
     {
         if (Input.GetKeyDown(KeyCode.Space))
         {
-            //º® ¿À¸£´Â ÁßÀÏ ½Ã
+            //ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
             if (isClimb)
             {
                 isClimb = false;
                 isJump = true;
 
-                //µÚ·Î Æ¨°Ü³ª°¨
+                //ï¿½Ú·ï¿½ Æ¨ï¿½Ü³ï¿½ï¿½ï¿½
                 rigidbody.AddForce(-transform.forward * 3, ForceMode.Impulse);
 
                 return;
             }
 
-            //1´Ü Á¡ÇÁ
+            //1ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             if (!isJump)
             {
                 isJump = true;
                 rigidbody.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
                 return;
             }
-            //2´Ü Á¡ÇÁ
+            //2ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
             else if (!useDoubleJump)
             {
                 animator.SetTrigger("isDoubleJump");
@@ -191,12 +191,12 @@ public class PlayerScript : MonoBehaviour
 
     void PlayerClimb()
     {
-        Vector3 raycastPos = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z); //ÇÃ·¹ÀÌ¾î°¡ ¹Ù¶óº¸´Â ¹æÇâ (y°ªÀÌ ¹ß¿¡ ¸ÂÃçÁ® ÀÖÀ¸¹Ç·Î °ªÀ» Á¶±Ý ´õÇØÁÜ)
+        Vector3 raycastPos = new Vector3(transform.position.x, transform.position.y + 1, transform.position.z); //ï¿½Ã·ï¿½ï¿½Ì¾î°¡ ï¿½Ù¶óº¸´ï¿½ ï¿½ï¿½ï¿½ï¿½ (yï¿½ï¿½ï¿½ï¿½ ï¿½ß¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Ç·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½)
 
-        //·¹ÀÌÄ³½ºÆ®¸¦ ÅëÇØ º® Ã£±â
+        //ï¿½ï¿½ï¿½ï¿½Ä³ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ Ã£ï¿½ï¿½
         if (Physics.Raycast(raycastPos, transform.forward, out RaycastHit hit, 0.3f))
         {
-            //º®ÀÌ ÀÖÀ» °æ¿ì
+            //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
             if (hit.collider != null)
             {
                 if (hit.collider.CompareTag("Enemy"))
@@ -204,71 +204,71 @@ public class PlayerScript : MonoBehaviour
 
                 if (!isClimb)
                 {
-                    //Á¡ÇÁ ÃÊ±âÈ­
+                    //ï¿½ï¿½ï¿½ï¿½ ï¿½Ê±ï¿½È­
                     isJump = false;
                     useDoubleJump = false;
 
-                    rigidbody.velocity = Vector3.zero; //AddForce °ª ÃÊ±âÈ­
-                    transform.rotation = Quaternion.LookRotation(-hit.normal); //º®ÀÇ ¹Ý´ë ¹æÇâÀ¸·Î Ä³¸¯ÅÍÈ¸Àü
+                    rigidbody.velocity = Vector3.zero; //AddForce ï¿½ï¿½ ï¿½Ê±ï¿½È­
+                    transform.rotation = Quaternion.LookRotation(-hit.normal); //ï¿½ï¿½ï¿½ï¿½ ï¿½Ý´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½È¸ï¿½ï¿½
 
-                    rigidbody.useGravity = false; //º®À» ¿À¸£´Â Áß¿¡´Â Áß·ÂÀÇ ¿µÇâÀ» ¹ÞÁö ¾ÊÀ½
+                    rigidbody.useGravity = false; //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß¿ï¿½ï¿½ï¿½ ï¿½ß·ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 }
 
                 isClimb = true;
 
-                //º® ÀÌµ¿
-                Vector3 playerDir = transform.up * moveDir.z + transform.right * moveDir.x; //ÇÃ·¹ÀÌ¾îÀÇ ¹æÇâÀº Ä³¸¯ÅÍÀÇ º¤ÅÍ°ª°ú Å°º¸µå ÀÔ·Â°ªÀ» ÅëÇØ ±¸ÇÔ
+                //ï¿½ï¿½ ï¿½Ìµï¿½
+                Vector3 playerDir = transform.up * moveDir.z + transform.right * moveDir.x; //ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Í°ï¿½ï¿½ï¿½ Å°ï¿½ï¿½ï¿½ï¿½ ï¿½Ô·Â°ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 transform.position += playerDir * climbSpd * Time.deltaTime;
             }
         }
-        //º®ÀÌ ¾øÀ» °æ¿ì
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
         else if (isClimb && hit.collider == null)
         {
             isClimb = false;
 
-            //µÚ·Î Æ¨°Ü³ª°¨
+            //ï¿½Ú·ï¿½ Æ¨ï¿½Ü³ï¿½ï¿½ï¿½
             rigidbody.AddForce(transform.up * 10, ForceMode.Impulse);
             isJump = true;
         }
 
-        //º®À» ¿À¸£´Â ÁßÀÌ ¾Æ´Ò ½Ã
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Æ´ï¿½ ï¿½ï¿½
         if (!isClimb)
         {
-            //Áß·Â È°¼ºÈ­
+            //ï¿½ß·ï¿½ È°ï¿½ï¿½È­
             rigidbody.useGravity = true;
         }
     }
 
     void PlayerShootMoveWeb()
     {
-        //°Å¹ÌÁÙ·Î ÀÌµ¿ ÁßÀÎ°¡
+        //ï¿½Å¹ï¿½ï¿½Ù·ï¿½ ï¿½Ìµï¿½ ï¿½ï¿½ï¿½Î°ï¿½
         if (moveJoint)
         {
-            //°Å¹ÌÁÙ ±×¸®±â
+            //ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½
             moveLineRenderer.SetPosition(0, rightHand.position);
             moveLineRenderer.SetPosition(1, moveGrapPoint);
         }
 
-        //°Å¹ÌÁÙ ¹ß»ç
+        //ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ß»ï¿½
         if (Input.GetMouseButtonDown(1))
         {
-            //ÇöÀç Ä³¸¯ÅÍÀÇ À§Ä¡ ±¸ÇÏ±â (Ä«¸Þ¶ó À§Ä¡ + Ä«¸Þ¶ó¿Í Ä³¸¯ÅÍ »çÀÌ °£°Ý)
+            //ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½Ï±ï¿½ (Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½Ä¡ + Ä«ï¿½Þ¶ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
             Vector3 hitPos = camera.transform.position + camera.transform.rotation * new Vector3(0, 0, camera.GetComponent<CameraMove>().distance);
 
-            //¸¸¾à °Å¹ÌÁÙÀ» ¹ß»çÇÒ ¼ö ÀÖ´Â ¿ÀºêÁ§Æ®°¡ ÀÖÀ» ½Ã
+            //ï¿½ï¿½ï¿½ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
             if (Physics.Raycast(hitPos, camera.transform.forward, out RaycastHit hit, 100))
             {
                 if (!hit.collider.CompareTag("Enemy"))
                 {
-                    moveGrapPoint = hit.point; //ÇØ´ç ¿ÀºêÁ§Æ®ÀÇ À§Ä¡ ÀúÀå
+                    moveGrapPoint = hit.point; //ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
 
-                    //SpiringJoint ÄÄÆ÷³ÍÆ® Ãß°¡
+                    //SpiringJoint ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ß°ï¿½
                     moveJoint = gameObject.AddComponent<SpringJoint>();
                     moveJoint.autoConfigureConnectedAnchor = false;
-                    moveJoint.connectedAnchor = moveGrapPoint; //¿ÀºêÁ§Æ®¿Í Á¶ÀÎÆ® ¿¬°á
+                    moveJoint.connectedAnchor = moveGrapPoint; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½
 
-                    //Á¶ÀÎÆ®ÀÇ ÃÖ´ë/ÃÖ¼Ò °Å¸® ÁöÁ¤
-                    float distanceFromPoint = Vector3.Distance(rightHand.position, moveGrapPoint); //ÇÃ·¹ÀÌ¾î¿Í ¿ÀºêÁ§Æ® °£ °Å¸® Ã£±â
+                    //ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ö´ï¿½/ï¿½Ö¼ï¿½ ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½
+                    float distanceFromPoint = Vector3.Distance(rightHand.position, moveGrapPoint); //ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ ï¿½Å¸ï¿½ Ã£ï¿½ï¿½
                     moveJoint.maxDistance = distanceFromPoint * 0.5f;
                     moveJoint.minDistance = distanceFromPoint * 0.25f;
 
@@ -276,12 +276,12 @@ public class PlayerScript : MonoBehaviour
                     moveJoint.damper = 7f;
                     moveJoint.massScale = 4.5f;
 
-                    //°Å¹ÌÁÙ ¶óÀÎ·»´õ·¯´Â ½ÃÀÛÁ¡°ú ³¡Á¡ µÎ °³¸¸ Á¸ÀçÇÔ
+                    //ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     moveLineRenderer.positionCount = 2;
                 }
             }
         }
-        //°Å¹ÌÁÙ ÇØÁ¦
+        //ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
         else if (Input.GetMouseButtonUp(1))
         {
             moveLineRenderer.positionCount = 0;
@@ -291,28 +291,28 @@ public class PlayerScript : MonoBehaviour
 
     void PlayerShootAttackWeb()
     {
-        //°Å¹ÌÁÙ·Î °ø°Ý ÁßÀÎ°¡
+        //ï¿½Å¹ï¿½ï¿½Ù·ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î°ï¿½
         if (attackJoint)
         {
-            //ÀüÅõ ¸ðµåÀÎ°¡
+            //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½Î°ï¿½
             if(attackMode == 2)
             {
                 if(attackMode2_EnemyScript == null)
                     attackMode2_EnemyScript = attackHitObj.GetComponent<EnemyScript>();
 
-                attackMode2_EnemyScript.isFaint = true; //Àû ±âÀý »óÅÂ
+                attackMode2_EnemyScript.isFaint = true; //ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-                attackGrapPoint = attackHitObj.transform.position; //ÇØ´ç ¿ÀºêÁ§Æ®ÀÇ À§Ä¡ ÀúÀå
-                attackJoint.connectedAnchor = transform.position; //¿ÀºêÁ§Æ® Á¶ÀÎÆ®¿Í ÇÃ·¹ÀÌ¾î ¿¬°á
+                attackGrapPoint = attackHitObj.transform.position; //ï¿½Ø´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½ï¿½
+                attackJoint.connectedAnchor = transform.position; //ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ ï¿½ï¿½ï¿½ï¿½
 
-                //°Å¹ÌÁÙ ±×¸®±â
+                //ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½×¸ï¿½ï¿½ï¿½
                 attackLineRenderer.SetPosition(0, leftHand.position);
                 attackLineRenderer.SetPosition(1, attackGrapPoint);
             }
-            //¼Ó»ç ¸ðµåÀÏ ½Ã
+            //ï¿½Ó»ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
             else
             {
-                //°Å¹ÌÁÙ »èÁ¦
+                //ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 attackLineRenderer.positionCount = 0;
                 Destroy(attackJoint);
             }
@@ -320,35 +320,35 @@ public class PlayerScript : MonoBehaviour
 
         if (Input.GetMouseButtonDown(0))
         {
-            //º®À» ¿À¸£´Â Áß¿¡´Â °ø°Ý ºÒ°¡
+            //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½Ò°ï¿½
             if (!isClimb)
             {
                 switch (attackMode)
                 {
                     case 1:
-                        UseAttackMode1(); //¼Ó»ç ¸ðµå
+                        UseAttackMode1(); //ï¿½Ó»ï¿½ ï¿½ï¿½ï¿½
                         break;
                     case 2:
-                        UseAttackMode2(); //ÀüÅõ ¸ðµå
+                        UseAttackMode2(); //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½
                         break;
                 }
             }
         }
         else if(Input.GetMouseButtonUp(0))
         {
-            //ÀüÅõ ¸ðµå Áß ¸¶¿ì½º¸¦ ¶¿ ½Ã
+            //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ì½ºï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½
             if(attackMode == 2 && attackJoint)
             {
-                //°Å¹ÌÁÙ ÇØÁ¦
+                //ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                 attackLineRenderer.positionCount = 0;
                 Destroy(attackJoint);
 
                 if (attackHitObj != null)
                 {
-                    //ÀÏÁ¤ ½Ã°£ ÈÄ ±âÀý ÇØÁ¦
+                    //ï¿½ï¿½ï¿½ï¿½ ï¿½Ã°ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½
                     attackMode2_EnemyScript.StartCoroutine(nameof(attackMode2_EnemyScript.DisableFaint), 3);
 
-                    //Ä«¸Þ¶ó ¹æÇâÀ¸·Î ³¯¸®±â
+                    //Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     Rigidbody enemyRigid = attackHitObj.GetComponent<Rigidbody>();
                     enemyRigid.AddForce(camera.transform.forward * 50, ForceMode.Impulse);
 
@@ -365,7 +365,7 @@ public class PlayerScript : MonoBehaviour
 
         GameObject web = Instantiate(mode1_web);
 
-        //ÇöÀç Ä³¸¯ÅÍÀÇ À§Ä¡ ±¸ÇÏ±â (Ä«¸Þ¶ó À§Ä¡ + Ä«¸Þ¶ó¿Í Ä³¸¯ÅÍ »çÀÌ °£°Ý)
+        //ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½Ï±ï¿½ (Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½Ä¡ + Ä«ï¿½Þ¶ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         Vector3 charPos = camera.transform.position + camera.transform.rotation * new Vector3(0, 0, camera.GetComponent<CameraMove>().distance + 0.3f);
         web.transform.position = charPos;
 
@@ -374,10 +374,10 @@ public class PlayerScript : MonoBehaviour
 
     void UseAttackMode2()
     {
-        //ÇöÀç Ä³¸¯ÅÍÀÇ À§Ä¡ ±¸ÇÏ±â (Ä«¸Þ¶ó À§Ä¡ + Ä«¸Þ¶ó¿Í Ä³¸¯ÅÍ »çÀÌ °£°Ý)
+        //ï¿½ï¿½ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½Ä¡ ï¿½ï¿½ï¿½Ï±ï¿½ (Ä«ï¿½Þ¶ï¿½ ï¿½ï¿½Ä¡ + Ä«ï¿½Þ¶ï¿½ï¿½ Ä³ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½)
         Vector3 hitPos = camera.transform.position + camera.transform.rotation * new Vector3(0, 0, camera.GetComponent<CameraMove>().distance);
 
-        //¸¸¾à °Å¹ÌÁÙÀ» ¹ß»çÇÒ ¼ö ÀÖ´Â ¿ÀºêÁ§Æ®°¡ ÀÖÀ» ½Ã
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½Å¹ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ß»ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
         if (Physics.Raycast(hitPos, camera.transform.forward, out RaycastHit hit, 100))
         {
             if(hit.collider.CompareTag("Enemy"))
@@ -388,12 +388,12 @@ public class PlayerScript : MonoBehaviour
 
                     attackHitObj = hit.collider.gameObject;
 
-                    //SpiringJoint ÄÄÆ÷³ÍÆ® Ãß°¡
+                    //SpiringJoint ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ß°ï¿½
                     attackJoint = hit.collider.gameObject.AddComponent<SpringJoint>();
                     attackJoint.autoConfigureConnectedAnchor = false;
 
-                    //Á¶ÀÎÆ®ÀÇ ÃÖ´ë/ÃÖ¼Ò °Å¸® ÁöÁ¤
-                    float distanceFromPoint = Vector3.Distance(leftHand.position, attackGrapPoint); //ÇÃ·¹ÀÌ¾î¿Í ¿ÀºêÁ§Æ® °£ °Å¸® Ã£±â
+                    //ï¿½ï¿½ï¿½ï¿½Æ®ï¿½ï¿½ ï¿½Ö´ï¿½/ï¿½Ö¼ï¿½ ï¿½Å¸ï¿½ ï¿½ï¿½ï¿½ï¿½
+                    float distanceFromPoint = Vector3.Distance(leftHand.position, attackGrapPoint); //ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ® ï¿½ï¿½ ï¿½Å¸ï¿½ Ã£ï¿½ï¿½
                     attackJoint.maxDistance = distanceFromPoint * 0.7f;
                     attackJoint.minDistance = distanceFromPoint * 0.5f;
 
@@ -401,7 +401,7 @@ public class PlayerScript : MonoBehaviour
                     attackJoint.damper = 5f;
                     attackJoint.massScale = 4.5f;
 
-                    //°Å¹ÌÁÙ ¶óÀÎ·»´õ·¯´Â ½ÃÀÛÁ¡°ú ³¡Á¡ µÎ °³¸¸ Á¸ÀçÇÔ
+                    //ï¿½Å¹ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Î·ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½
                     attackLineRenderer.positionCount = 2;
                 }
             }

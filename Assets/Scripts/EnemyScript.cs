@@ -13,13 +13,13 @@ public class EnemyScript : MonoBehaviour
 
     public bool canMove = true;
 
-    public bool isFaint; //ÀüÅõ ¸ðµå¿¡ ÀÇÇØ ±âÀý »óÅÂÀÎ°¡
+    public bool isFaint; //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½å¿¡ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½Î°ï¿½
     public bool isMove;
     bool isFalling;
     bool isAttacked;
     public bool isDie;
 
-    GameObject groundObj; //ÇöÀç ¹ß ¹Ø¿¡ ÀÖ´Â ¿ÀºêÁ§Æ®
+    GameObject groundObj; //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ ï¿½Ø¿ï¿½ ï¿½Ö´ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½Æ®
 
     void Awake()
     {
@@ -30,15 +30,15 @@ public class EnemyScript : MonoBehaviour
 
     void Update()
     {
-        //Àû ¸ðµ¨ ÀÚÃ¼´Â À§Ä¡°¡ º¯°æµÇÁö ¾Ê´Â´Ù
+        //ï¿½ï¿½ ï¿½ï¿½ ï¿½ï¿½Ã¼ï¿½ï¿½ ï¿½ï¿½Ä¡ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½Ê´Â´ï¿½
         enemyModel.transform.localPosition = new Vector3(0, 0, 0);
 
         if (!isDie)
         {
-            CheckIsFall(); //³«ÇÏ ÁßÀÎÁö Ã¼Å©
-            CheckIsDie(); //»ç¸ÁÇß´ÂÁö Ã¼Å©
+            CheckIsFall(); //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ Ã¼Å©
+            CheckIsDie(); //ï¿½ï¿½ï¿½ï¿½ß´ï¿½ï¿½ï¿½ Ã¼Å©
 
-            //¾Ö´Ï¸ÞÀÌ¼Ç Ã³¸®
+            //ï¿½Ö´Ï¸ï¿½ï¿½Ì¼ï¿½ Ã³ï¿½ï¿½
             animator.SetBool("isRun", isMove);
             animator.SetBool("isInAir", isFalling);
             animator.SetBool("isFaint", isFaint);
@@ -48,9 +48,9 @@ public class EnemyScript : MonoBehaviour
 
     void OnCollisionEnter(Collision collision)
     {
-        if (collision.collider != null)
+        if (collision.GetComponent<Collider>() != null)
         {
-            //¸¸¾à ¹Ù´Ú°ú Ãæµ¹Çß°Å³ª ÇÃ·¹ÀÌ¾î¿Í Ãæµ¹ ½Ã ¹ÝÈ¯
+            //ï¿½ï¿½ï¿½ï¿½ ï¿½Ù´Ú°ï¿½ ï¿½æµ¹ï¿½ß°Å³ï¿½ ï¿½Ã·ï¿½ï¿½Ì¾ï¿½ï¿½ ï¿½æµ¹ ï¿½ï¿½ ï¿½ï¿½È¯
             if (collision.gameObject == groundObj ||
                 collision.gameObject.CompareTag("Player"))
             {
@@ -60,7 +60,7 @@ public class EnemyScript : MonoBehaviour
                 isFaint = false;
             }
 
-            //¸¸¾à ±âÀý »óÅÂ¿¡¼­ º®°ú Ãæµ¹ÇÒ ½Ã
+            //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½Â¿ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½æµ¹ï¿½ï¿½ ï¿½ï¿½
             if (isFaint)
             {
                 EnemyHit(3);
@@ -70,7 +70,7 @@ public class EnemyScript : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        //¸¸¾à °Å¹ÌÁÙ°ú Á¢ÃË ½Ã
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½Å¹ï¿½ï¿½Ù°ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
         if (other.gameObject.CompareTag("Web"))
         {
             EnemyHit(1);
@@ -79,7 +79,7 @@ public class EnemyScript : MonoBehaviour
 
     void CheckIsFall()
     {
-        //¹Ù´Ú¿¡ ÂøÁöÇßÀ» ½Ã
+        //ï¿½Ù´Ú¿ï¿½ ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
         if (Physics.Raycast(transform.position, -transform.up, out RaycastHit hit, 0.1f))
         {
             if (hit.collider != null)
@@ -88,7 +88,7 @@ public class EnemyScript : MonoBehaviour
                 isFalling = false;
             }
         }
-        //³«ÇÏ ÁßÀÏ ½Ã
+        //ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½ï¿½ï¿½ ï¿½ï¿½
         else if (hit.collider == null)
         {
             isFalling = true;
