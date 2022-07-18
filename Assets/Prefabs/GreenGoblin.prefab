@@ -50,9 +50,12 @@ MonoBehaviour:
   m_Name: 
   m_EditorClassIdentifier: 
   enemyModel: {fileID: 9089786823780458817}
+  enemyMaxHP: 100
+  enemyCurHP: 0
+  canMove: 1
   isFaint: 0
-  isAttack: 0
   isMove: 0
+  isDie: 0
 --- !u!114 &610856774
 MonoBehaviour:
   m_ObjectHideFlags: 0
@@ -65,7 +68,7 @@ MonoBehaviour:
   m_Script: {fileID: 11500000, guid: a20ae4917a36e494f877d3d1eea15974, type: 3}
   m_Name: 
   m_EditorClassIdentifier: 
-  isAttacted: 0
+  targets: {fileID: 0}
 --- !u!54 &6621287246991356622
 Rigidbody:
   m_ObjectHideFlags: 0
@@ -93,9 +96,9 @@ CapsuleCollider:
   m_IsTrigger: 0
   m_Enabled: 1
   m_Radius: 0.26681453
-  m_Height: 1.7817968
+  m_Height: 1.7594388
   m_Direction: 1
-  m_Center: {x: 0, y: 0.878686, z: -0.061362565}
+  m_Center: {x: 0, y: 0.87, z: -0.061362565}
 --- !u!135 &610856775
 SphereCollider:
   m_ObjectHideFlags: 0
