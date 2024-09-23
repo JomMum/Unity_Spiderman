@@ -4,6 +4,8 @@ using UnityEngine;
 
 public class WebScript : MonoBehaviour
 {
+    [SerializeField] GameObject webMark; 
+
     public int moveSpd;
     public int destroyTime;
 
@@ -15,11 +17,23 @@ public class WebScript : MonoBehaviour
     void Update()
     {
         transform.Translate(Vector3.forward * moveSpd * Time.deltaTime, Space.Self);
+
+        // ê±°ë¯¸ì¤„ ìêµ­ ìƒì„±
+        if (Physics.Raycast(transform.position, transform.forward, out RaycastHit hitInfo, 3))
+        {
+            if (!(hitInfo.collider.CompareTag("Player") || hitInfo.collider.CompareTag("Enemy")))
+            {
+                Vector3 spawnPosition = hitInfo.point + hitInfo.normal * 0.1f;
+                Instantiate(webMark, spawnPosition, Quaternion.LookRotation(hitInfo.normal));
+
+                Destroy(gameObject);
+            }
+        }
     }
 
     IEnumerator DestroyWeb()
     {
-        //ÀÏÁ¤ ½Ã°£ ÈÄ °Å¹ÌÁÙ »èÁ¦
+        //ì¼ì • ì‹œê°„ í›„ ê±°ë¯¸ì¤„ ì‚­ì œ
         yield return new WaitForSeconds(destroyTime);
 
         Destroy(gameObject);
@@ -27,7 +41,7 @@ public class WebScript : MonoBehaviour
 
     void OnTriggerEnter(Collider other)
     {
-        //ÇÃ·¹ÀÌ¾î ¿Ü¿¡ ´Ù¸¥ ¿ÀºêÁ§Æ®¿Í Ãæµ¹ ½Ã »èÁ¦
+        //í”Œë ˆì´ì–´ ì™¸ì— ë‹¤ë¥¸ ì˜¤ë¸Œì íŠ¸ì™€ ì¶©ëŒ ì‹œ ì‚­ì œ
         if(!other.gameObject.CompareTag("Player"))
         {
             if (other.gameObject.CompareTag("Enemy"))

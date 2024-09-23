@@ -1,6 +1,7 @@
 using System.Collections;
 using System.Collections.Generic;
 using UnityEngine;
+using static UnityEditor.SceneView;
 
 public class PlayerScript : MonoBehaviour
 {
@@ -14,6 +15,7 @@ public class PlayerScript : MonoBehaviour
     [SerializeField] GameObject mode2_web;
 
     [SerializeField] OverSCript resultScript;
+    CameraMove cameraMove;
 
     GameObject attackHitObj;
     EnemyScript attackMode2_EnemyScript;
@@ -35,13 +37,17 @@ public class PlayerScript : MonoBehaviour
 
     public bool canMove = true;
     bool canClimb = true;
-    bool useDoubleJump;
+    private bool canAttack = true;
 
     public bool isJump;
+    bool isDoubleJump;
     public bool isClimb;
+    bool isRun;
     bool isFall;
+    bool isBackJump; // 벽을 기다가 하는 점프
     public bool isDie;
     public bool rotateToCamera;
+    bool wasRunningBeforeAir;
 
     public int moveSpd = 5; //�̵��ӵ�
     public int runSpd = 10; //�޸��� �ӵ�
@@ -49,7 +55,10 @@ public class PlayerScript : MonoBehaviour
     public int jumpPower = 10;
 
     public int attackMode = 1; //���� ���
+    bool isAttackUsingLeftHand = true; // 어떤 손으로 공격할 지 설정
 
+    private float attackCooldown = 0.7f; // 0.3초 쿨다운 시간
+    private float cooldownTimer = 0f;
 
     void Awake()
     {
@@ -57,7 +66,7 @@ public class PlayerScript : MonoBehaviour
         animator = playerModel.GetComponent<Animator>();
         moveLineRenderer = GetComponent<LineRenderer>();
         attackLineRenderer = mode2_web.GetComponent<LineRenderer>();
-        
+        cameraMove = camera.GetComponent<CameraMove>();
 
         Cursor.visible = false;
     }
@@ -70,7 +79,11 @@ public class PlayerScript : MonoBehaviour
         if (stateInfo.IsName("Landing") || stateInfo.IsName("ClimbUp"))
         {
             isJump = false;
-            useDoubleJump = false;
+            isDoubleJump = false;
+            canMove = false;
+        }
+        else if (isBackJump)
+        {
             canMove = false;
         }
         else
@@ -99,12 +112,15 @@ public class PlayerScript : MonoBehaviour
         }
 
         animator.SetBool("isWalk", moveDir != Vector3.zero);
-        animator.SetBool("isRun", moveDir != Vector3.zero && Input.GetAxis("Run") != 0);
-        animator.SetBool("isJump", isJump);
-        animator.SetBool("isClimb", isClimb);
-        animator.SetBool("isMoveClimb", moveDir != Vector3.zero && isClimb);
-        animator.SetBool("isInAir", isFall);
+        animator.SetBool("isRun", moveDir != Vector3.zero && isRun);
+        animator.SetBool("isJump", isJump && !isDoubleJump);
+        animator.SetBool("isDoubleJump", isDoubleJump && isFall);
         animator.SetBool("isSwing", moveJoint);
+
+        // 백점프 동안에는 이하 애니메이션 무시
+        animator.SetBool("isClimb", isClimb && !isBackJump);
+        animator.SetBool("isMoveClimb", moveDir != Vector3.zero && isClimb && !isBackJump);
+        animator.SetBool("isInAir", isFall && !isBackJump);
     }
 
     void OnCollisionStay(Collision collision)
@@ -187,19 +203,46 @@ public class PlayerScript : MonoBehaviour
                 Vector3 newForward = new Vector3(camera.transform.forward.x, 0, camera.transform.forward.z).normalized;
                 transform.forward = newForward;
 
+                isRun = Input.GetAxis("Run") != 0 && Input.GetAxis("Vertical") > 0;
+
+                // 공중에 있기 전부터 달리고 있었는가
+                if (!isFall)
+                {
+                    if (isRun)
+                    {
+                        wasRunningBeforeAir = true;
+                    } else
+                    {
+                        wasRunningBeforeAir = false;
+                    }
+                }
+                else if (Input.GetAxis("Run") == 0)
+                {
+                    wasRunningBeforeAir = false; // 전에 달리고 있었더라도, 낙하 중에 달리기 취소하면 착지 전까지 다시 달리기 불가
+                }
+
+                bool checkRun = isRun && (!isFall || wasRunningBeforeAir);
                 if (!moveJoint)
                 {
-                    if (Input.GetAxis("Run") != 0)
+                    if (checkRun)
+                    {
                         transform.position += playerDir * runSpd * Time.deltaTime;
+                    }
                     else
+                    {
                         transform.position += playerDir * moveSpd * Time.deltaTime;
+                    }
                 }
                 else
                 {
-                    if (Input.GetAxis("Run") != 0)
-                        transform.position += playerDir * runSpd * 2f * Time.deltaTime;
+                    if (checkRun)
+                    {
+                        transform.position += playerDir * runSpd * 1.7f * Time.deltaTime;
+                    }
                     else
-                        transform.position += playerDir * moveSpd * 2f * Time.deltaTime;
+                    {
+                        transform.position += playerDir * moveSpd * 1.7f * Time.deltaTime;
+                    }
                 }
             }
         }
@@ -212,20 +255,23 @@ public class PlayerScript : MonoBehaviour
             // 기어 오르는 경우
             if (isClimb)
             {
+                // 뒤로 점프
+                canMove = false;
                 canClimb = false;
-
-                isJump = true;
                 isClimb = false;
 
-                // 뒤로 점프
-                rigidbody.AddForce(-transform.forward * 3, ForceMode.Impulse);
+                isDoubleJump = true;
+                isBackJump = true;
 
-                StartCoroutine(ActiveCanClimb());
+                rigidbody.velocity = Vector3.zero;
+                rigidbody.AddForce(-transform.forward * 5 + Vector3.up * jumpPower, ForceMode.Impulse);
+
+                StartCoroutine(EndBackJump());
                 return;
             } 
 
             // 점프
-            if (!isJump)
+            if (!isJump && !isDoubleJump)
             {
                 isJump = true;
                 rigidbody.velocity = Vector3.zero;
@@ -233,10 +279,9 @@ public class PlayerScript : MonoBehaviour
                 return;
             }
             // 2단 점프
-            else if (!useDoubleJump)
+            else if (!isDoubleJump)
             {
-                useDoubleJump = true;
-                animator.SetTrigger("isDoubleJump");
+                isDoubleJump = true;
 
                 rigidbody.velocity = Vector3.zero;
                 rigidbody.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
@@ -245,10 +290,14 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-    IEnumerator ActiveCanClimb()
+    IEnumerator EndBackJump()
     {
-        yield return new WaitForSeconds(0.3f);
+        yield return new WaitForSeconds(0.4f);
+
+        canMove = true;
         canClimb = true;
+        isDoubleJump = false;
+        isBackJump = false;
     }
 
     void PlayerClimb()
@@ -291,7 +340,7 @@ public class PlayerScript : MonoBehaviour
                         if (!isClimb)
                         {
                             isJump = false;
-                            useDoubleJump = false;
+                            isDoubleJump = false;
 
                             rigidbody.velocity = Vector3.zero;
                             transform.rotation = Quaternion.LookRotation(-hit.normal);
@@ -328,7 +377,7 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
-
+    // 거미줄 이동
     void PlayerShootMoveWeb()
     {
         //�Ź��ٷ� �̵� ���ΰ�
@@ -377,8 +426,11 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
+    // 거미줄 공격
     void PlayerShootAttackWeb()
     {
+        AttackCoolDown();
+
         //�Ź��ٷ� ���� ���ΰ�
         if (attackJoint)
         {
@@ -406,11 +458,22 @@ public class PlayerScript : MonoBehaviour
             }
         }
 
-        if (Input.GetMouseButtonDown(0))
+        if (Input.GetMouseButtonDown(0) && canAttack)
         {
-            //���� ������ �߿��� ���� �Ұ�
             if (!isClimb)
             {
+                canAttack = false;
+
+                // 공격 손 설정. 웹스윙 중에는 왼손만 사용.
+                if (moveJoint)
+                {
+                    isAttackUsingLeftHand = true;
+                }
+                else
+                {
+                    isAttackUsingLeftHand = !isAttackUsingLeftHand;
+                }
+
                 switch (attackMode)
                 {
                     case 1:
@@ -447,9 +510,29 @@ public class PlayerScript : MonoBehaviour
         }
     }
 
+    // 공격 쿨타임
+    void AttackCoolDown()
+    {
+        if (!canAttack)
+        {
+            cooldownTimer += Time.deltaTime;
+            if (cooldownTimer >= attackCooldown)
+            {
+                canAttack = true;
+                cooldownTimer = 0f;
+            }
+        }
+    }
+
     void UseAttackMode1()
     {
-        animator.SetTrigger("isShoot");
+        if (isAttackUsingLeftHand)
+        {
+            animator.SetTrigger("doShootLeft");
+        }else
+        {
+            animator.SetTrigger("doShootRight");
+        }
 
         rotateToCamera = true;
 
@@ -481,7 +564,14 @@ public class PlayerScript : MonoBehaviour
             {
                 if (!hit.collider.gameObject.GetComponent<EnemyScript>().isDie)
                 {
-                    animator.SetTrigger("isShoot");
+                    if (isAttackUsingLeftHand)
+                    {
+                        animator.SetTrigger("doShootLeft");
+                    } else
+                    {
+                        animator.SetTrigger("doShootRight");
+                    }
+                    
 
                     attackHitObj = hit.collider.gameObject;
 
