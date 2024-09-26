@@ -38,11 +38,9 @@ public class PlayerScript : MonoBehaviour
     public bool canMove = true;
     bool canClimb = true;
     private bool canAttack = true;
-    bool canJump = true;
-    bool canDoubleJump = false;
 
     public bool isJump;
-    public bool isDoubleJump;
+    bool isDoubleJump;
     public bool isClimb;
     bool isRun;
     bool isFall;
@@ -80,9 +78,6 @@ public class PlayerScript : MonoBehaviour
 
         if (stateInfo.IsName("Landing") || stateInfo.IsName("ClimbUp"))
         {
-            canJump = true;
-            canDoubleJump = false;
-
             isJump = false;
             isDoubleJump = false;
             canMove = false;
@@ -101,7 +96,7 @@ public class PlayerScript : MonoBehaviour
 
         if (!isDie)
         {
-            if (canMove == true)
+            if (canMove)
             {
                 moveDir = new Vector3(Input.GetAxis("Horizontal"), 0, Input.GetAxis("Vertical"));
 
@@ -118,8 +113,8 @@ public class PlayerScript : MonoBehaviour
 
         animator.SetBool("isWalk", moveDir != Vector3.zero);
         animator.SetBool("isRun", moveDir != Vector3.zero && isRun);
-        animator.SetBool("isJump", isJump);
-        animator.SetBool("isDoubleJump", isDoubleJump);
+        animator.SetBool("isJump", isJump && !isDoubleJump);
+        animator.SetBool("isDoubleJump", isDoubleJump && isFall);
         animator.SetBool("isSwing", moveJoint);
 
         // 백점프 동안에는 이하 애니메이션 무시
@@ -258,11 +253,10 @@ public class PlayerScript : MonoBehaviour
         if (Input.GetKeyDown(KeyCode.Space))
         {
             // 기어 오르는 경우
-            if (!stateInfo.IsName("ClimbUp") && isClimb)
+            if (isClimb)
             {
                 // 뒤로 점프
                 canMove = false;
-
                 canClimb = false;
                 isClimb = false;
 
@@ -270,29 +264,23 @@ public class PlayerScript : MonoBehaviour
                 isBackJump = true;
 
                 rigidbody.velocity = Vector3.zero;
-                rigidbody.AddForce(-transform.forward * 3 + Vector3.up * (jumpPower / 2), ForceMode.Impulse);
+                rigidbody.AddForce(-transform.forward * 5 + Vector3.up * jumpPower, ForceMode.Impulse);
 
                 StartCoroutine(EndBackJump());
                 return;
             } 
 
             // 점프
-            if (canJump)
+            if (!isJump && !isDoubleJump)
             {
-                canJump = false;
-                canDoubleJump = true;
-
                 isJump = true;
                 rigidbody.velocity = Vector3.zero;
                 rigidbody.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
                 return;
             }
             // 2단 점프
-            else if (canDoubleJump)
+            else if (!isDoubleJump)
             {
-                canDoubleJump = false;
-
-                isJump = false;
                 isDoubleJump = true;
 
                 rigidbody.velocity = Vector3.zero;
@@ -304,10 +292,11 @@ public class PlayerScript : MonoBehaviour
 
     IEnumerator EndBackJump()
     {
-        yield return new WaitForSeconds(0.5f);
+        yield return new WaitForSeconds(0.4f);
 
         canMove = true;
         canClimb = true;
+        isDoubleJump = false;
         isBackJump = false;
     }
 
@@ -340,6 +329,7 @@ public class PlayerScript : MonoBehaviour
                     Vector3 raycastUpPos = new Vector3(transform.position.x, transform.position.y + 1.6f, transform.position.z);
                     if (!Physics.Raycast(raycastUpPos, direction, 0.3f))
                     {
+                        canMove = false;
                         animator.SetTrigger("doClimbUp");
                         return;
                     }
@@ -349,9 +339,6 @@ public class PlayerScript : MonoBehaviour
                         // 기어오르기 초기 설정
                         if (!isClimb)
                         {
-                            canJump = false;
-                            canDoubleJump = false;
-
                             isJump = false;
                             isDoubleJump = false;
 
@@ -383,12 +370,10 @@ public class PlayerScript : MonoBehaviour
         if (isClimb && disableClimb)
         {
             isClimb = false;
-            canJump = false;
-            isJump = true;
-            canDoubleJump = true;
-
+            
             // 건물 양옆 끝에 다다를 경우 점프
             rigidbody.AddForce(transform.up * 5, ForceMode.Impulse);
+            isJump = true;
         }
     }
 
