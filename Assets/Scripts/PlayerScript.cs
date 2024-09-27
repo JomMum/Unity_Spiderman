@@ -5,7 +5,7 @@ using static UnityEditor.SceneView;
 
 public class PlayerScript : MonoBehaviour
 {
-    [SerializeField] GameObject camera;
+    [SerializeField] GameObject mainCamera;
     [SerializeField] GameObject playerModel;
 
     [SerializeField] Transform rightHand;
@@ -23,7 +23,7 @@ public class PlayerScript : MonoBehaviour
     SpringJoint moveJoint; //�̵��� �Ź��� ����Ʈ
     SpringJoint attackJoint; //���ݿ� �Ź��� ����Ʈ (���� ���)
 
-    Rigidbody rigidbody;
+    Rigidbody rigid;
     Animator animator;
     AnimatorStateInfo stateInfo;
 
@@ -64,11 +64,11 @@ public class PlayerScript : MonoBehaviour
 
     void Awake()
     {
-        rigidbody = GetComponent<Rigidbody>();
+        rigid = GetComponent<Rigidbody>();
         animator = playerModel.GetComponent<Animator>();
         moveLineRenderer = GetComponent<LineRenderer>();
         attackLineRenderer = mode2_web.GetComponent<LineRenderer>();
-        cameraMove = camera.GetComponent<CameraMove>();
+        cameraMove = mainCamera.GetComponent<CameraMove>();
 
         Cursor.visible = false;
     }
@@ -128,9 +128,9 @@ public class PlayerScript : MonoBehaviour
         animator.SetBool("isInAir", isFall && !isBackJump);
     }
 
-    void OnCollisionStay(Collision collision)
+    void OnCollisionStay(UnityEngine.Collision collision)
     {
-        if(collision.GetComponent<Collider>().CompareTag("Enemy"))
+        if(collision.gameObject.GetComponent<Collider>().CompareTag("Enemy"))
         {
             if (!isDie)
             {
@@ -179,7 +179,7 @@ public class PlayerScript : MonoBehaviour
     {
         if (rotateToCamera)
         {
-            Quaternion targetRotation = Quaternion.Euler(0, camera.transform.rotation.eulerAngles.y, 0);
+            Quaternion targetRotation = Quaternion.Euler(0, mainCamera.transform.rotation.eulerAngles.y, 0);
             transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5 * Time.deltaTime);
 
             // 각도 차이가 임계값(rotationThreshold) 이하이면 회전 완료로 간주
@@ -198,14 +198,14 @@ public class PlayerScript : MonoBehaviour
             if (Input.GetAxis("Horizontal") != 0 || Input.GetAxis("Vertical") != 0)
             {
                 // 카메라 바라보는 방향
-                Vector3 camForward = new Vector3(camera.transform.forward.x, 0, camera.transform.forward.z).normalized;
-                Vector3 camRight = new Vector3(camera.transform.right.x, 0, camera.transform.right.z).normalized;
+                Vector3 camForward = new Vector3(mainCamera.transform.forward.x, 0, mainCamera.transform.forward.z).normalized;
+                Vector3 camRight = new Vector3(mainCamera.transform.right.x, 0, mainCamera.transform.right.z).normalized;
 
                 // 이동 방향 지정
                 playerDir = camForward * moveDir.z + camRight * moveDir.x;
 
                 // 캐릭터가 바라보는 각도 지정 (카메라 기준)
-                Vector3 newForward = new Vector3(camera.transform.forward.x, 0, camera.transform.forward.z).normalized;
+                Vector3 newForward = new Vector3(mainCamera.transform.forward.x, 0, mainCamera.transform.forward.z).normalized;
                 transform.forward = newForward;
 
                 isRun = Input.GetAxis("Run") != 0 && Input.GetAxis("Vertical") > 0;
@@ -269,8 +269,8 @@ public class PlayerScript : MonoBehaviour
                 isDoubleJump = true;
                 isBackJump = true;
 
-                rigidbody.velocity = Vector3.zero;
-                rigidbody.AddForce(-transform.forward * 3 + Vector3.up * (jumpPower / 2), ForceMode.Impulse);
+                rigid.velocity = Vector3.zero;
+                rigid.AddForce(-transform.forward * 3 + Vector3.up * (jumpPower / 2), ForceMode.Impulse);
 
                 StartCoroutine(EndBackJump());
                 return;
@@ -283,8 +283,8 @@ public class PlayerScript : MonoBehaviour
                 canDoubleJump = true;
 
                 isJump = true;
-                rigidbody.velocity = Vector3.zero;
-                rigidbody.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
+                rigid.velocity = Vector3.zero;
+                rigid.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
                 return;
             }
             // 2단 점프
@@ -295,8 +295,8 @@ public class PlayerScript : MonoBehaviour
                 isJump = false;
                 isDoubleJump = true;
 
-                rigidbody.velocity = Vector3.zero;
-                rigidbody.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
+                rigid.velocity = Vector3.zero;
+                rigid.AddForce(Vector3.up * jumpPower, ForceMode.Impulse);
                 return;
             }
         }
@@ -316,7 +316,7 @@ public class PlayerScript : MonoBehaviour
         if (!canClimb) return;
 
         // 기어오를 때는 중력 무시
-        rigidbody.useGravity = !isClimb;
+        rigid.useGravity = !isClimb;
 
         bool disableClimb = false;
 
@@ -355,10 +355,10 @@ public class PlayerScript : MonoBehaviour
                             isJump = false;
                             isDoubleJump = false;
 
-                            rigidbody.velocity = Vector3.zero;
+                            rigid.velocity = Vector3.zero;
                             transform.rotation = Quaternion.LookRotation(-hit.normal);
 
-                            rigidbody.useGravity = false;
+                            rigid.useGravity = false;
                         }
 
                         isClimb = true;
@@ -388,7 +388,7 @@ public class PlayerScript : MonoBehaviour
             canDoubleJump = true;
 
             // 건물 양옆 끝에 다다를 경우 점프
-            rigidbody.AddForce(transform.up * 5, ForceMode.Impulse);
+            rigid.AddForce(transform.up * 5, ForceMode.Impulse);
         }
     }
 
@@ -406,30 +406,37 @@ public class PlayerScript : MonoBehaviour
         //�Ź��� �߻�
         if (Input.GetMouseButtonDown(1))
         {
-            Vector3 hitPos = camera.transform.position + camera.transform.rotation * new Vector3(0, 0, 60);
+            Vector3 hitPos = gameObject.transform.position;
+            Vector3 direction = mainCamera.transform.forward;
 
-            if (Physics.Raycast(hitPos, camera.transform.forward, out RaycastHit hit, 100))
+            // Raycast 시작
+            if (Physics.Raycast(hitPos, direction, out RaycastHit hit, 100))
             {
-                if (!hit.collider.CompareTag("Enemy"))
+                Vector3 toTarget = hit.point - gameObject.transform.position;
+                float angle = Vector3.Angle(Vector3.up, toTarget);
+                if (angle <= 90f)
                 {
-                    moveGrapPoint = hit.point; //�ش� ������Ʈ�� ��ġ ����
+                    if (!hit.collider.CompareTag("Enemy") && !hit.collider.CompareTag("Player"))
+                    {
+                        moveGrapPoint = hit.point; // 충돌 지점 설정
 
-                    //SpiringJoint ������Ʈ �߰�
-                    moveJoint = gameObject.AddComponent<SpringJoint>();
-                    moveJoint.autoConfigureConnectedAnchor = false;
-                    moveJoint.connectedAnchor = moveGrapPoint; //������Ʈ�� ����Ʈ ����
+                        // SpringJoint 컴포넌트 추가
+                        moveJoint = gameObject.AddComponent<SpringJoint>();
+                        moveJoint.autoConfigureConnectedAnchor = false;
+                        moveJoint.connectedAnchor = moveGrapPoint; // 웹을 해당 지점에 연결
 
-                    //����Ʈ�� �ִ�/�ּ� �Ÿ� ����
-                    float distanceFromPoint = Vector3.Distance(rightHand.position, moveGrapPoint); //�÷��̾�� ������Ʈ �� �Ÿ� ã��
-                    moveJoint.maxDistance = distanceFromPoint * 0.5f;
-                    moveJoint.minDistance = distanceFromPoint * 0.25f;
+                        // 웹의 거리 계산
+                        float distanceFromPoint = Vector3.Distance(rightHand.position, moveGrapPoint); // 플레이어와 충돌 지점 사이 거리 계산
+                        moveJoint.maxDistance = distanceFromPoint * 0.5f;
+                        moveJoint.minDistance = distanceFromPoint * 0.25f;
 
-                    moveJoint.spring = 4.5f;
-                    moveJoint.damper = 7f;
-                    moveJoint.massScale = 4.5f;
+                        moveJoint.spring = 4.5f;
+                        moveJoint.damper = 7f;
+                        moveJoint.massScale = 4.5f;
 
-                    //�Ź��� ���η������� �������� ���� �� ���� ������
-                    moveLineRenderer.positionCount = 2;
+                        // 웹을 그리는 LineRenderer 설정
+                        moveLineRenderer.positionCount = 2;
+                    }
                 }
             }
         }
@@ -516,7 +523,7 @@ public class PlayerScript : MonoBehaviour
 
                     //ī�޶� �������� ������
                     Rigidbody enemyRigid = attackHitObj.GetComponent<Rigidbody>();
-                    enemyRigid.AddForce(camera.transform.forward * 50, ForceMode.Impulse);
+                    enemyRigid.AddForce(mainCamera.transform.forward * 50, ForceMode.Impulse);
 
                     attackHitObj = null;
                     attackMode2_EnemyScript = null;
@@ -555,13 +562,13 @@ public class PlayerScript : MonoBehaviour
 
         Vector3 charPos = leftHand.transform.position;
         web.transform.position = charPos;
-        web.transform.rotation = camera.transform.rotation;
+        web.transform.rotation = mainCamera.transform.rotation;
     }
 
     void RotatePlayerTowardsCamera()
     {
         // 카메라의 회전 값을 가져와 Y축만 적용
-        Quaternion targetRotation = Quaternion.Euler(0, camera.transform.rotation.eulerAngles.y, 0);
+        Quaternion targetRotation = Quaternion.Euler(0, mainCamera.transform.rotation.eulerAngles.y, 0);
 
         // 현재 플레이어 회전을 타겟 회전으로 Slerp(서서히 회전)
         transform.rotation = Quaternion.Slerp(transform.rotation, targetRotation, 5 * Time.deltaTime);
@@ -570,10 +577,10 @@ public class PlayerScript : MonoBehaviour
     void UseAttackMode2()
     {
         //���� ĳ������ ��ġ ���ϱ� (ī�޶� ��ġ + ī�޶�� ĳ���� ���� ����)
-        Vector3 hitPos = camera.transform.position + camera.transform.rotation * new Vector3(0, 0, 60);
+        Vector3 hitPos = mainCamera.transform.position + mainCamera.transform.rotation * new Vector3(0, 0, 60);
 
         //���� �Ź����� �߻��� �� �ִ� ������Ʈ�� ���� ��
-        if (Physics.Raycast(hitPos, camera.transform.forward, out RaycastHit hit, 100))
+        if (Physics.Raycast(hitPos, mainCamera.transform.forward, out RaycastHit hit, 100))
         {
             if(hit.collider.CompareTag("Enemy"))
             {

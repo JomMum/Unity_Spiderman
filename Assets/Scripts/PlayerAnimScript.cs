@@ -4,14 +4,14 @@ using UnityEngine;
 
 public class PlayerAnimScript : MonoBehaviour
 {
-    [SerializeField] GameObject camera;
+    [SerializeField] GameObject mainCamera;
     PlayerScript playerScript;
     CameraMove cameraMove;
 
     private void Awake()
     {
         playerScript = gameObject.transform.parent.GetComponent<PlayerScript>();
-        cameraMove = camera.GetComponent<CameraMove>();
+        cameraMove = mainCamera.GetComponent<CameraMove>();
     }
 
     public void OnLanding()

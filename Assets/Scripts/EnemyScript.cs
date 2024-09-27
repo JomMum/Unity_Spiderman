@@ -47,9 +47,9 @@ public class EnemyScript : MonoBehaviour
         }
     }
 
-    void OnCollisionEnter(Collision collision)
+    void OnCollisionEnter(UnityEngine.Collision collision)
     {
-        if (collision.GetComponent<Collider>() != null)
+        if (collision.gameObject.GetComponent<Collider>() != null)
         {
             //���� �ٴڰ� �浹�߰ų� �÷��̾�� �浹 �� ��ȯ
             if (collision.gameObject == groundObj ||
